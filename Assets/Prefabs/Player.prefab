@@ -29,7 +29,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7363417558231762019}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.52, y: 0, z: -1.92}
+  m_LocalPosition: {x: 2.52, y: 0.01, z: -1.92}
   m_LocalScale: {x: 0.4, y: 0.5, z: 0.4}
   m_Children:
   - {fileID: 7363417559614358351}
@@ -112,7 +112,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   detectionCircle: {fileID: 2318657249590299914, guid: cfb8602addf6e9c4eb224c37030fabe0, type: 3}
-  objectMotor: {fileID: 0}
+  ballLayerMask:
+    serializedVersion: 2
+    m_Bits: 2048
   playerState: 0
   typePlayer: 1
 --- !u!54 &857086806675880825
@@ -157,7 +159,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7363417559614358350}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.86, z: 0}
+  m_LocalPosition: {x: 0, y: -0.79, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 7363417558231762023}
