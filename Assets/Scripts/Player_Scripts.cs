@@ -24,15 +24,11 @@ public class Player_Scripts : MonoBehaviour
 		PICK_BALL,
 		GO_ORIGIN,
 		INACTIVATED,
-		ACTIVATED
+		ACTIVATED,
+		CATCH_GOAL
 	};
 
-    private float att_EnergyRegeneration = 0.5f;
-	private float def_EnergyRegeneration = 0.5f;
-	private float att_SpawnRate = 0.4f;
-	private float def_SpawnRate = 0.6f;
-	private float att_EnergyCost = 2f;
-	private float def_EnergyCost = 3f;
+
 	private float att_SpawnTime = 0.5f;
 	private float def_SpawnTime = 0.5f;
 	private float att_ReactiveTime = 2.5f;
@@ -46,10 +42,10 @@ public class Player_Scripts : MonoBehaviour
 	private float def_DetectionRange = 0.35f;
 
 	[SerializeField]
-	private GameObject detectionCircle;
+	public GameObject detectionCircle;
 
-	private GameObject[] allTeam1Players;
-	private GameObject[] allTeam2Players;
+	//private GameObject[] allTeam1Players;
+	//private GameObject[] allTeam2Players;
     private GameObject ball;
 	//private Ball ball;
 
@@ -60,37 +56,26 @@ public class Player_Scripts : MonoBehaviour
 	private Vector3 originPos;
 	private Vector3 goalTarget;
 
+	private float detectionLength;
+
 	private bool isActivating = false;
-
-	void Awake()
-	{
-		
-
-		//playerState = Player_State.STAND_BY;
-		updateTeamMembers();
-		//detectionCircle.SetActive(false);
-
-		
-	}
 
 	void Start()
 	{
 		originPos = gameObject.transform.position;
 		ball = GameObject.FindGameObjectWithTag("Ball");
-		//ball = GetComponent<Ball>();
+		detectionCircle = GameManager.instance.GetChildWithName(gameObject, "detectionCircle");
+		detectionLength = GameManager.instance.GetFieldLength() * def_DetectionRange;
+
 		
-		if (gameObject.tag == "PlayerTeam1")
+		//if (gameObject.tag == "PlayerTeam1")
+		if (GameManager.instance.playerMode == GameManager.PlayerMode.ATTACKER)
 		{
 			goalTarget = GameObject.FindGameObjectWithTag("GoalTeam2").transform.position;
 		}
 		else
 		{
 			goalTarget = GameObject.FindGameObjectWithTag("GoalTeam1").transform.position;
-		}
-
-		if (ball.transform.parent == null)
-		{
-			Debug.Log("Ball should be taken");
 		}
 
 		playerState = Player_State.INIT;		
@@ -107,23 +92,19 @@ public class Player_Scripts : MonoBehaviour
 			case Player_State.CHASING_BALL:
 				if (typePlayer == TypePlayer.DEFENDER)
 				{
-					GameObject ballOwner = ball.transform.parent.gameObject;
-					Debug.Log("Ballowner pos x = " + ballOwner.transform.position.x + " y = " + ballOwner.transform.position.y + " z = " + ballOwner.transform.position.z);
-					Debug.Log("def pos x = " + gameObject.transform.position.x + " y = " + gameObject.transform.position.y + " z = " + gameObject.transform.position.z);
-					MoveToTarget(ballOwner.transform.position, def_NormalSpeed * Time.deltaTime);	
-					ballOwner.GetComponent<Player_Scripts>().SetPlayerState(Player_State.OPPONENT_CAUGHT);
+					if (ball.transform.parent != null)
+					{
+						GameObject ballOwner = ball.transform.parent.gameObject;
+						MoveToTarget(ballOwner.transform.position, def_NormalSpeed * Time.deltaTime);	
+					}
 				}
 			break;
 
 			case Player_State.HOLDING_BALL:
 				if (typePlayer == TypePlayer.ATTACKER)
 				{
-					if (Input.GetKeyDown("space"))
-					{
-						Debug.Log ("This guy is holding bal");
-						playerState = Player_State.PASSING;
-					}			
-
+					//if (Input.GetKeyDown("space"))
+					//	playerState = Player_State.PASSING;			
 					MoveToTarget(goalTarget, att_CarryingSpeed * Time.deltaTime);
 				}
 			break;
@@ -136,42 +117,24 @@ public class Player_Scripts : MonoBehaviour
 				}
 			break;
 
-			case Player_State.OPPONENT_CAUGHT:
-				// Defender side
-				// Caught the ball from attacker side within Detection circle & make them passing ball
-				// -> change to Player_State.INACTIVATED
-			break;
-
 			case Player_State.PASSING:
-				Debug.Log("Passing ball");
+				//Debug.Log("Passing ball");
 				if (typePlayer == TypePlayer.ATTACKER)
 				{
 					GameObject closetPlayer = null;
-					if (gameObject.tag == "PlayerTeam1")
+					if (GameManager.instance.playerMode == GameManager.PlayerMode.ATTACKER)
 					{
-						closetPlayer = GetClosetPlayer(gameObject, allTeam1Players);
+						//Debug.Log("Player is attacker");
+						closetPlayer = GetClosetPlayer(gameObject, GameManager.instance.playerTeam);
 					}
 					else
 					{
-						closetPlayer = GetClosetPlayer(gameObject, allTeam2Players);
+						//Debug.Log("Player is defender");
+						closetPlayer = GetClosetPlayer(gameObject, GameManager.instance.enemyTeam);
 					}
 
-					if(closetPlayer)
-					{
-						Debug.Log("Do pass a ball to this guy");
-						Debug.Log("x = " + closetPlayer.transform.position.x + " y = " + closetPlayer.transform.position.y + "z = " + closetPlayer.transform.position.z);
-						PassBallToPlayer(closetPlayer);
-						
-					}
-					else
-					{
-						Debug.Log("There's no active team-mate to pass a ball");
-						Debug.Log("This guy still holding ball");
-						playerState = Player_State.HOLDING_BALL;
-					}	
+					PassBallToPlayer(closetPlayer);	
 				}
-				// Attacker side
-				// Do passing to closest team player
 			break;
 
 			case Player_State.GO_ORIGIN:
@@ -185,7 +148,6 @@ public class Player_Scripts : MonoBehaviour
 			case Player_State.PICK_BALL:
 				if (typePlayer == TypePlayer.ATTACKER)
 				{
-					// pick a ball -> change to Holding ball state
 					if (ball.transform.parent != null)
 					{
 						playerState = Player_State.MOVE_AUTOMATIC;
@@ -199,41 +161,34 @@ public class Player_Scripts : MonoBehaviour
 			break;
 
 			case Player_State.STAND_BY:
-				detectionCircle.SetActive(true);
-				if (CheckIfAttackerComeInside())
+				if (typePlayer == TypePlayer.DEFENDER)
 				{
-					playerState = Player_State.CHASING_BALL;
-					detectionCircle.SetActive(false);
+					detectionCircle.SetActive(true);
+					if (CheckIfAttackerComeInside())
+					{
+						playerState = Player_State.CHASING_BALL;
+						detectionCircle.SetActive(false);
+					}
 				}
 			break;
 
 			case Player_State.INACTIVATED:
-				detectionCircle.SetActive(false);
+				if (typePlayer == TypePlayer.DEFENDER)
+				{
+					detectionCircle.SetActive(false);
+				}	
+
 				if (!isActivating)
 				{
 					isActivating = true;
 					StartCoroutine(ReActivePlayer());
 				}
-				
-				// change to greyscale / another animation
-
-				// Waiting for Activated again
-
-				// Attacker -> Stop moving
-
-				// Defender -> Move back to origin pos
-
-				// allow another soldier go through
 
 			break;
 
 			case Player_State.ACTIVATED:
 				if (typePlayer == TypePlayer.ATTACKER)
 				{
-
-					//GameObject ballOwner = ball.owner;
-					// if ball has owner -> change to move
-					// if ball is free -> chasing ball
 					if (ball.transform.parent != null)
 					{
 						if (gameObject == ball.transform.parent)
@@ -255,17 +210,23 @@ public class Player_Scripts : MonoBehaviour
 					playerState = Player_State.STAND_BY;
 				}
 			break;
+
+			case Player_State.CATCH_GOAL:
+				Debug.Log("Catch goal");
+				bool isWin = true; // win match
+				GameManager.instance.EndMatch(isWin);
+				// End match -> You win Match -> start new match.
+			break;
 		}
 	}
 
-	private void updateTeamMembers()
-	{
-		var temp = gameObject.tag;
-		Debug.Log("Player Tag = " + temp);
+	// private void updateTeamMembers()
+	// {
+	// 	var temp = gameObject.tag;
 
-		allTeam1Players = GameObject.FindGameObjectsWithTag("PlayerTeam1");
-		allTeam2Players = GameObject.FindGameObjectsWithTag("PlayerTeam2");
-	}
+	// 	allTeam1Players = GameObject.FindGameObjectsWithTag("PlayerTeam1");
+	// 	allTeam2Players = GameObject.FindGameObjectsWithTag("PlayerTeam2");
+	// }
 
 	private IEnumerator ReActivePlayer()
 	{
@@ -287,6 +248,14 @@ public class Player_Scripts : MonoBehaviour
 	public void SetPlayerState(Player_State state)
 	{
 		this.playerState = state;
+	}
+
+	public void SetPlayerType(bool isAttacker)
+	{
+		if (isAttacker)
+			this.typePlayer = TypePlayer.ATTACKER;
+		else
+			this.typePlayer = TypePlayer.DEFENDER;
 	}
 
 	private GameObject GetClosetPlayer(GameObject fromThis, GameObject[] allOtherTeamPlayer)
@@ -312,65 +281,107 @@ public class Player_Scripts : MonoBehaviour
 		return targetPlayer;
 	}
 
+	private GameObject GetClosetPlayer(GameObject fromThis, List<GameObject> allOtherTeamPlayer)
+	{
+		GameObject targetPlayer = null;
+		float closetDistanceSqr = Mathf.Infinity;
+		Vector3 currentPos = fromThis.transform.position;
+
+		Debug.Log("allOtherTeamPlayer " + allOtherTeamPlayer.Count);
+
+		foreach (GameObject go in allOtherTeamPlayer)
+		{
+			Player_Scripts goScripts = go.GetComponent<Player_Scripts>();
+			if (go != fromThis && goScripts.GetPlayerState() != Player_State.INACTIVATED)
+			{
+				Vector3 directionToTarget = go.transform.position - currentPos;
+				float dSqrToTarget = directionToTarget.sqrMagnitude;
+				if (dSqrToTarget < closetDistanceSqr)
+				{
+					closetDistanceSqr = dSqrToTarget;
+					targetPlayer = go;
+				}
+			}
+		}
+		return targetPlayer;
+	}
+
+
 	private void PassBallToPlayer(GameObject targetPlayer)
     {
+		StopMoving();
+		this.playerState = Player_State.INACTIVATED;
+
 		Rigidbody rgBall = ball.gameObject.GetComponent<Rigidbody>();
+		rgBall.isKinematic = false;
+		ball.transform.SetParent(null);
+
 		if (targetPlayer)
 		{
-			Debug.Log("Passed ball to target player");
 			Vector3 directionBall = (targetPlayer.transform.position - ball.transform.position).normalized;
 			float distanceBall = (targetPlayer.transform.position - ball.transform.position).magnitude;
 			rgBall.velocity = directionBall * (distanceBall * passForce) * (ballSpeed * Time.deltaTime);
 
-			rgBall.isKinematic = false;
-			ball.transform.SetParent(null);
-			this.playerState = Player_State.INACTIVATED;
+			Player_Scripts sc = targetPlayer.GetComponent<Player_Scripts>();
+			sc.SetPlayerState(Player_State.PICK_BALL);
 		}
 		else
 		{
-			// if not found a candidate just throw the ball forward....
-			Debug.Log("throw the ball forward....");
-			ball.GetComponent<Rigidbody>().velocity = transform.forward * passForce;
+			StartCoroutine(ThrowTheBalForward());
 		}
-        
     }
+
+	private IEnumerator ThrowTheBalForward()
+	{
+		Rigidbody rbBall = ball.GetComponent<Rigidbody>();
+
+		rbBall.velocity = transform.forward * ballSpeed;
+		yield return new WaitForSeconds(2f);
+		rbBall.velocity = Vector3.zero;
+	}
 
 	private void MoveToTarget(Vector3 target, float speed)
 	{
-		transform.position = Vector3.MoveTowards(transform.position, target, speed);
+		transform.position = Vector3.MoveTowards(transform.position, new Vector3(target.x, transform.position.y, target.z), speed);
 	}
 
-	private bool IHaveBall()
+	public void StopMoving()
 	{
-		return transform.childCount > 1;
+		transform.position += Vector3.zero;
 	}
 
 	void OnTriggerEnter(Collider other)
 	{
 		if (typePlayer == TypePlayer.ATTACKER)
 		{
-			var otherTag = other.gameObject.tag;
-			if (otherTag == "Ball")
+			if (playerState != Player_State.INACTIVATED)
 			{
-				Ball ball = other.GetComponent<Ball>();
-				if (ball != null)
+				var otherTag = other.gameObject.tag;
+				if (otherTag == "Ball")
 				{
-					Rigidbody rbBall = ball.GetComponent<Rigidbody>();
-					rbBall.velocity = Vector3.zero;
-					rbBall.isKinematic = true;
-					ball.transform.SetParent(transform);
-
-					SetPlayerState(Player_State.HOLDING_BALL);
+					if (other.gameObject.transform.parent == null)
+					{
+						Ball ball = other.GetComponent<Ball>();
+						Rigidbody rbBall = ball.GetComponent<Rigidbody>();
+						rbBall.velocity = Vector3.zero;
+						rbBall.isKinematic = true;
+						ball.transform.SetParent(transform);
+						SetPlayerState(Player_State.HOLDING_BALL);
+					}
 				}
-			}
 
-			if ( otherTag != gameObject.tag && (otherTag == "PlayerTeam1" || otherTag == "PlayerTeam2"))
-			{
-				Player_Scripts otherScripts = other.GetComponent<Player_Scripts>();
-				if (otherScripts.playerState == Player_State.CHASING_BALL)
+				if ( otherTag != gameObject.tag && (otherTag == "PlayerTeam1" || otherTag == "PlayerTeam2"))
 				{
-					otherScripts.SetPlayerState(Player_State.GO_ORIGIN);
-					this.playerState = Player_State.PASSING;
+					if (playerState == Player_State.HOLDING_BALL)
+					{
+						Player_Scripts otherScripts = other.GetComponent<Player_Scripts>();
+						if (otherScripts.playerState == Player_State.CHASING_BALL)
+						{
+							StopMoving();
+							this.playerState = Player_State.PASSING;
+							otherScripts.SetPlayerState(Player_State.GO_ORIGIN);
+						}
+					}
 				}
 			}
 		}	
@@ -380,12 +391,14 @@ public class Player_Scripts : MonoBehaviour
 	{
 		GameObject targetEnemy = null;
 
-		Collider[] rangeChecks = Physics.OverlapSphere(transform.position, def_DetectionRange * 5, ballLayerMask);
+		Collider[] rangeChecks = Physics.OverlapSphere(transform.position, detectionLength, ballLayerMask);
 		if (rangeChecks.Length != 0)
 		{
-			Debug.Log("Found something!");
-			return rangeChecks[0].transform;
+			if (rangeChecks[0].transform.gameObject.tag == "Ball")
+				return rangeChecks[0].transform;
 		} 
+
+		//Debug.Log("check length = " + detectionLength);
 
 		return null;
 	}

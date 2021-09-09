@@ -9,6 +9,7 @@ TagManager:
   - Ball
   - GoalTeam1
   - GoalTeam2
+  - FootballField
   layers:
   - Default
   - TransparentFX
@@ -19,8 +20,8 @@ TagManager:
   - 
   - 
   - BALL
-  - TEAM1
-  - TEAM2
+  - PlayerField
+  - EnemyField
   - 
   - 
   - 

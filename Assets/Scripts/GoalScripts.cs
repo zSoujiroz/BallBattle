@@ -4,15 +4,57 @@ using UnityEngine;
 
 public class GoalScripts : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    void OnTriggerEnter(Collider other)
     {
-        
-    }
+        var otherTag = other.gameObject.tag;
+        if (otherTag == "Ball")
+        {
+            if(other.gameObject.transform.parent != null)
+            {
+                GameObject ballOwner = other.gameObject.transform.parent.gameObject;
+                Player_Scripts ballOwnerScripts = ballOwner.GetComponent<Player_Scripts>();
+                ballOwnerScripts.StopMoving();
+                ballOwnerScripts.SetPlayerState(Player_Scripts.Player_State.CATCH_GOAL);
+            }
+            else
+            {
+                other.gameObject.transform.position += Vector3.zero;
+            }
+        }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        if (gameObject.tag == "GoalTeam1")
+        {
+            if (otherTag == "PlayerTeam2")
+            {
+                Player_Scripts otherScripts = other.GetComponent<Player_Scripts>();
+                otherScripts.StopMoving();
+
+                if (otherScripts.GetPlayerState() == Player_Scripts.Player_State.HOLDING_BALL)
+                    otherScripts.SetPlayerState(Player_Scripts.Player_State.CATCH_GOAL);
+                else
+                {
+                    GameManager.instance.enemyTeam.Remove(other.gameObject);
+                    other.gameObject.SetActive(false);
+                }
+            }
+        }
+
+        if (gameObject.tag == "GoalTeam2")
+        {
+            if (otherTag == "PlayerTeam1")
+            {
+                Player_Scripts otherScripts = other.GetComponent<Player_Scripts>();
+                otherScripts.StopMoving();
+
+                if (otherScripts.GetPlayerState() == Player_Scripts.Player_State.HOLDING_BALL)
+                    otherScripts.SetPlayerState(Player_Scripts.Player_State.CATCH_GOAL);
+                else
+                {
+                    GameManager.instance.playerTeam.Remove(other.gameObject);
+                    other.gameObject.SetActive(false);
+                }
+            }
+
+        }
     }
 }
