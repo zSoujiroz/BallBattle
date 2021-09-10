@@ -7,7 +7,8 @@ public class PlayerPool : MonoBehaviour
     public static PlayerPool SharedInstance;
     public List<GameObject> pooledPlayer;
     public List<GameObject> pooledEnemy;
-    public GameObject objectedToPool;
+    public GameObject enemyToPool;
+    public GameObject playerToPool;
     //public GameObject detectionCircle;
     private int amountToPool = 11;
     private Transform Team1Holder;
@@ -29,11 +30,12 @@ public class PlayerPool : MonoBehaviour
     {
         Team1Holder = new GameObject ("PlayerTeam").transform;
         GameObject tmp;
-        GameObject tmp2;
+        //GameObject tmp2;
         pooledPlayer = new List<GameObject>(); 
         for(int i = 0; i < amountToPool ;i++)
         {
-            tmp = Instantiate(objectedToPool, Team1Holder);
+            //tmp = Instantiate(objectedToPool, Team1Holder);
+            tmp = Instantiate(playerToPool, Team1Holder);
             Player_Scripts objectScript = tmp.GetComponent<Player_Scripts>();
             //objectScript.detectionCircle.SetActive(false);
             //if (!isAttacker)
@@ -44,7 +46,7 @@ public class PlayerPool : MonoBehaviour
             objectScript.tag = "PlayerTeam1";
             objectScript.SetPlayerType(isAttacker);
             tmp.name = "Player1";
-            tmp.GetComponent<MeshRenderer>().material.color = Color.blue;
+            //tmp.GetComponent<MeshRenderer>().material.color = Color.blue;
             tmp.SetActive(false);
             pooledPlayer.Add(tmp);
         }
@@ -54,11 +56,11 @@ public class PlayerPool : MonoBehaviour
     {
         Team2Holder = new GameObject ("EnemyTeam").transform;
         GameObject tmp;
-        GameObject tmp2;
+        //GameObject tmp2;
         pooledEnemy = new List<GameObject>(); 
         for(int i = 0; i < amountToPool ;i++)
         {
-            tmp = Instantiate(objectedToPool, Team2Holder);
+            tmp = Instantiate(enemyToPool, Team2Holder);
             Player_Scripts objectScript = tmp.GetComponent<Player_Scripts>();
             //if (!isAttacker)
             {
@@ -68,7 +70,7 @@ public class PlayerPool : MonoBehaviour
             objectScript.tag = "PlayerTeam2";
             objectScript.SetPlayerType(isAttacker);
             tmp.name = "Player2";
-            tmp.GetComponent<MeshRenderer>().material.color = Color.red;
+            //tmp.GetComponent<MeshRenderer>().material.color = Color.red;
             tmp.SetActive(false);
             pooledEnemy.Add(tmp);
         }

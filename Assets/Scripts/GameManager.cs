@@ -27,7 +27,7 @@ public class GameManager : MonoBehaviour
     public Slider enemyEnergySlider;
 
     private int matchPerGame = 5;
-    private float timeLimit = 20f;//140f;
+    private float timeLimit = 140f;
     private float timeRush = 15f;
     private int maxEnergy = 6;
 
@@ -79,7 +79,8 @@ public class GameManager : MonoBehaviour
     private float timeRemaining;
     [HideInInspector]
     public bool timerIsRunning = false;
-    private float MatchStartDelay = 2f;
+    private float matchStartDelay = 2f;
+    private float matchEndDelay = 4f;
 
     private bool isRushTime;
     private int playerScore;
@@ -87,7 +88,10 @@ public class GameManager : MonoBehaviour
     
     private int gameMatch;
 
-    private GameObject ball;
+    public GameObject ball;
+    [HideInInspector]
+    public BallScript ballScript;
+
 
     public List<GameObject> playerTeam;
     public List<GameObject> enemyTeam;
@@ -123,6 +127,7 @@ public class GameManager : MonoBehaviour
         EnemyField();
 
         ball = GameObject.FindGameObjectWithTag("Ball");  
+        ballScript = ball.GetComponent<BallScript>();
     }
 
     void Update()
@@ -181,8 +186,9 @@ public class GameManager : MonoBehaviour
 
         Rigidbody rgBall = ball.gameObject.GetComponent<Rigidbody>();
         rgBall.isKinematic = false;
-        ball.transform.SetParent(null);
-        ball.transform.position = Vector3.zero; 
+        //ball.transform.SetParent(null);
+        ballScript.SetBallOwner(null);
+        ball.transform.position = new Vector3(0f, 0.2f, 0f); 
 
 
         // match level 1 -> PlayerTeam2 will be defender
@@ -315,6 +321,7 @@ public class GameManager : MonoBehaviour
             else
                 enemyScore +=1;
         }
+        DisplayEndMatch();
         //check endgame
         if (CheckEndGame() == false)
         {
@@ -435,7 +442,7 @@ public class GameManager : MonoBehaviour
         ui_EnemyScoreText.text = enemyScore + "";
 
         ui_LoadMatch.SetActive(true);
-        Invoke("HideEndMatch", MatchStartDelay);
+        Invoke("HideEndMatch", matchEndDelay);
     }
 
     void HideEndMatch()
@@ -451,7 +458,7 @@ public class GameManager : MonoBehaviour
             matchText.text = "Match : " + gameMatch;
 
             ui_LoadMatch.SetActive(true);
-            Invoke("HideLoadMatch", MatchStartDelay);
+            Invoke("HideLoadMatch", matchStartDelay);
         }
     }
     void HideLoadMatch()

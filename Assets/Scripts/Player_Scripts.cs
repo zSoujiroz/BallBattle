@@ -29,6 +29,17 @@ public class Player_Scripts : MonoBehaviour
 		END_MATCH
 	};
 
+	public enum AnimationType
+	{
+		Idle = 0,
+		SlowRun,
+		FastRun,
+		Dance,
+		Die,
+		Pass,
+		PickBall
+	}
+
 
 	private float att_SpawnTime = 0.5f;
 	private float def_SpawnTime = 0.5f;
@@ -45,10 +56,12 @@ public class Player_Scripts : MonoBehaviour
 	//[SerializeField]
 	//public GameObject detectionCircle;
 
-	//private GameObject[] allTeam1Players;
-	//private GameObject[] allTeam2Players;
-    private GameObject ball;
-	//private Ball ball;
+    //private GameObject ball;
+	//private BallScript ballScript;
+
+	private float rotationSpeed = 1f;
+
+	private Animator animator;
 
 	public LayerMask ballLayerMask;
 	public Player_State playerState;
@@ -61,10 +74,14 @@ public class Player_Scripts : MonoBehaviour
 
 	private bool isActivating = false;
 
+
+
 	void Start()
 	{
+		animator = GetComponent<Animator>();
 		originPos = gameObject.transform.position;
-		ball = GameObject.FindGameObjectWithTag("Ball");
+		//ball = GameObject.FindGameObjectWithTag("Ball");
+		//ballScript = ball.GetComponent<BallScript>();
 		//detectionCircle = GameManager.instance.GetChildWithName(gameObject, "detectionCircle");
 		detectionLength = GameManager.instance.GetFieldLength() * def_DetectionRange;
 		playerState = Player_State.INIT;		
@@ -75,6 +92,9 @@ public class Player_Scripts : MonoBehaviour
 		switch ( playerState ) 
 		{
 			case Player_State.INIT:
+				RotationToTarget(GameManager.instance.ball.transform.position);
+				//RotationToTarget(ball.transform.position);
+				//animator.Stop();
 				if (GameManager.instance.playerMode == GameManager.PlayerMode.ATTACKER)
 				{
 					goalTarget = GameObject.FindGameObjectWithTag("GoalTeam2").transform.position;
@@ -87,11 +107,14 @@ public class Player_Scripts : MonoBehaviour
 			break;
 
 			case Player_State.CHASING_BALL:
+				animator.SetInteger("PlayerAnimationState", 2); // FastRun = 2
 				if (typePlayer == TypePlayer.DEFENDER)
 				{
-					if (ball.transform.parent != null)
+					GameObject ballOwner = GameManager.instance.ballScript.GetBallOwner();
+					//if (ball.transform.parent != null)
+					if (ballOwner != null)
 					{
-						GameObject ballOwner = ball.transform.parent.gameObject;
+						//GameObject ballOwner = ball.transform.parent.gameObject;
 						MoveToTarget(ballOwner.transform.position, def_NormalSpeed * Time.deltaTime);	
 					}
 				}
@@ -100,6 +123,8 @@ public class Player_Scripts : MonoBehaviour
 			case Player_State.HOLDING_BALL:
 				if (typePlayer == TypePlayer.ATTACKER)
 				{
+					//animator.Play("SlowRun");
+					animator.SetInteger("PlayerAnimationState", 1); // SlowRun = 2
 					//if (Input.GetKeyDown("space"))
 					//	playerState = Player_State.PASSING;			
 					MoveToTarget(goalTarget, att_CarryingSpeed * Time.deltaTime);
@@ -109,6 +134,8 @@ public class Player_Scripts : MonoBehaviour
 			case Player_State.MOVE_AUTOMATIC:
 				if (typePlayer == TypePlayer.ATTACKER)
 				{
+					//animator.Play("FastRun");
+					animator.SetInteger("PlayerAnimationState", 2); // FastRun = 2
 					float step =  att_NormalSpeed * Time.deltaTime;
 					MoveToTarget(goalTarget, step);
 				}
@@ -135,29 +162,38 @@ public class Player_Scripts : MonoBehaviour
 			break;
 
 			case Player_State.GO_ORIGIN:
-
-				Debug.Log("Origin position: x = " + originPos.x + " y = " + originPos.y + " z = " + originPos.z);
+				//Debug.Log("Origin position: x = " + originPos.x + " y = " + originPos.y + " z = " + originPos.z)
+				//animator.Play("SlowRun");
+				animator.SetInteger("PlayerAnimationState", 2); // FastRun = 2
 				MoveToTarget(originPos, def_NormalSpeed * Time.deltaTime);
+
 				if (gameObject.transform.position == originPos)
+				{	
+					//animator.Play("Idle");
 					playerState = Player_State.INACTIVATED;
+				}
 			break;
 
 			case Player_State.PICK_BALL:
 				if (typePlayer == TypePlayer.ATTACKER)
 				{
-					if (ball.transform.parent != null)
+					//animator.Play("FastRun");
+					animator.SetInteger("PlayerAnimationState", 2); // FastRun = 2
+					//if (ball.transform.parent != null)
+					if (GameManager.instance.ballScript.GetBallOwner() != null)
 					{
 						playerState = Player_State.MOVE_AUTOMATIC;
 					}
 					else
 					{
-						Vector3 ballPosition = ball.transform.position;
+						Vector3 ballPosition = GameManager.instance.ball.transform.position;
 						MoveToTarget(ballPosition, att_NormalSpeed * Time.deltaTime);
 					}					
 				}
 			break;
 
 			case Player_State.STAND_BY:
+				animator.SetInteger("PlayerAnimationState", 0); // Idle
 				if (typePlayer == TypePlayer.DEFENDER)
 				{
 					//detectionCircle.SetActive(true);
@@ -170,6 +206,7 @@ public class Player_Scripts : MonoBehaviour
 			break;
 
 			case Player_State.INACTIVATED:
+				animator.SetInteger("PlayerAnimationState", 0); // Idle
 				if (typePlayer == TypePlayer.DEFENDER)
 				{
 					//detectionCircle.SetActive(false);
@@ -186,9 +223,12 @@ public class Player_Scripts : MonoBehaviour
 			case Player_State.ACTIVATED:
 				if (typePlayer == TypePlayer.ATTACKER)
 				{
-					if (ball.transform.parent != null)
+					GameObject ballOwner = GameManager.instance.ballScript.GetBallOwner();
+					//if (ball.transform.parent != null)
+					if (ballOwner != null)
 					{
-						if (gameObject == ball.transform.parent)
+						//if (gameObject == ball.transform.parent)
+						if (gameObject == ballOwner)
 						{
 							playerState = Player_State.HOLDING_BALL;
 						}
@@ -209,11 +249,12 @@ public class Player_Scripts : MonoBehaviour
 			break;
 
 			case Player_State.CATCH_GOAL:
+				//animator.Play("Dancing");
 				//Reset Ball
-				Rigidbody rgBall = ball.gameObject.GetComponent<Rigidbody>();
+				Rigidbody rgBall = GameManager.instance.ball.gameObject.GetComponent<Rigidbody>();
 				rgBall.isKinematic = false;
-				ball.transform.SetParent(null);
-				ball.transform.position = Vector3.zero;
+				GameManager.instance.ball.transform.SetParent(null);
+				GameManager.instance.ball.transform.position = Vector3.zero;
 
 				playerState	= Player_State.END_MATCH;
 
@@ -224,6 +265,7 @@ public class Player_Scripts : MonoBehaviour
 			break;
 
 			case Player_State.END_MATCH:
+				
 				// Play animation win!
 			break;
 		}
@@ -313,14 +355,16 @@ public class Player_Scripts : MonoBehaviour
 		StopMoving();
 		this.playerState = Player_State.INACTIVATED;
 
-		Rigidbody rgBall = ball.gameObject.GetComponent<Rigidbody>();
+		Rigidbody rgBall = GameManager.instance.ball.gameObject.GetComponent<Rigidbody>();
 		rgBall.isKinematic = false;
-		ball.transform.SetParent(null);
+		//ball.transform.SetParent(null);
+		GameManager.instance.ballScript.SetBallOwner(null);
 
 		if (targetPlayer)
 		{
-			Vector3 directionBall = (targetPlayer.transform.position - ball.transform.position).normalized;
-			float distanceBall = (targetPlayer.transform.position - ball.transform.position).magnitude;
+			Vector3 ballPos = GameManager.instance.ball.transform.position;
+			Vector3 directionBall = (targetPlayer.transform.position - ballPos).normalized;
+			float distanceBall = (targetPlayer.transform.position - ballPos).magnitude;
 			rgBall.velocity = directionBall * (distanceBall * passForce) * (ballSpeed * Time.deltaTime);
 
 			Player_Scripts sc = targetPlayer.GetComponent<Player_Scripts>();
@@ -334,7 +378,7 @@ public class Player_Scripts : MonoBehaviour
 
 	private IEnumerator ThrowTheBalForward()
 	{
-		Rigidbody rbBall = ball.GetComponent<Rigidbody>();
+		Rigidbody rbBall = GameManager.instance.ball.GetComponent<Rigidbody>();
 
 		rbBall.velocity = transform.forward * ballSpeed;
 		yield return new WaitForSeconds(2f);
@@ -343,7 +387,22 @@ public class Player_Scripts : MonoBehaviour
 
 	private void MoveToTarget(Vector3 target, float speed)
 	{
-		transform.position = Vector3.MoveTowards(transform.position, new Vector3(target.x, transform.position.y, target.z), speed);
+		// Vector3 direction = Vector3.Normalize(target - transform.position);
+		// Quaternion toRotation = Quaternion.LookRotation(direction, Vector3.up);
+		// transform.rotation = Quaternion.RotateTowards(transform.rotation, toRotation, 360f * Time.deltaTime);
+		RotationToTarget(target);
+
+		transform.position = Vector3.MoveTowards(transform.position, new Vector3(target.x, transform.position.y, target.z), speed);	
+	}
+
+	private void RotationToTarget(Vector3 target)
+	{
+		Vector3 direction = Vector3.Normalize(target - transform.position);
+		if (direction != Vector3.zero)
+		{
+			Quaternion toRotation = Quaternion.LookRotation(direction, Vector3.up);
+			transform.rotation = Quaternion.RotateTowards(transform.rotation, toRotation, 360f * Time.deltaTime);
+		}
 	}
 
 	public void StopMoving()
@@ -360,13 +419,16 @@ public class Player_Scripts : MonoBehaviour
 				var otherTag = other.gameObject.tag;
 				if (otherTag == "Ball")
 				{
-					if (other.gameObject.transform.parent == null)
+					//if (other.gameObject.transform.parent == null)
+					if (GameManager.instance.ballScript.GetBallOwner() == null)
 					{
-						Ball ball = other.GetComponent<Ball>();
-						Rigidbody rbBall = ball.GetComponent<Rigidbody>();
+						//Ball ball = other.GetComponent<Ball>();
+						Rigidbody rbBall = GameManager.instance.ball.GetComponent<Rigidbody>();
 						rbBall.velocity = Vector3.zero;
 						rbBall.isKinematic = true;
-						ball.transform.SetParent(transform);
+						//ball.transform.SetParent(transform);
+						GameManager.instance.ballScript.SetBallOwner(gameObject);
+						animator.SetInteger("PlayerAnimationState", 4); // Kick/take ball = 4
 						SetPlayerState(Player_State.HOLDING_BALL);
 					}
 				}
@@ -379,6 +441,8 @@ public class Player_Scripts : MonoBehaviour
 						if (otherScripts.playerState == Player_State.CHASING_BALL)
 						{
 							StopMoving();
+							animator.SetInteger("PlayerAnimationState", 4); // Kick ball = 4
+							otherScripts.animator.SetInteger("PlayerAnimationState", 3); // Pass the ball = 3
 							this.playerState = Player_State.PASSING;
 							otherScripts.SetPlayerState(Player_State.GO_ORIGIN);
 						}

@@ -9,9 +9,9 @@ public class Loader : MonoBehaviour
 
     void Awake()
     {
-        if (GameManager.instance == null)
-            Instantiate(gameManager);
-        if (GameManager.instance == null)
-            Instantiate(gameOptions);
+        //if (GameManager.instance == null)
+          //  Instantiate(gameManager);
+        //if (GameOptions.sharedinstance == null)
+        //    Instantiate(gameOptions);
     }
 }

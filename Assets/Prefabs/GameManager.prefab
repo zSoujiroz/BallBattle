@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &5868580478492600212
+--- !u!1 &5548297685715715443
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,8 +8,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7711010051114334651}
-  - component: {fileID: 3935901257653230423}
+  - component: {fileID: 5548297685715715441}
+  - component: {fileID: 5548297685715715442}
+  - component: {fileID: 5548297685715715440}
+  - component: {fileID: 5548297685715715455}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -17,13 +19,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7711010051114334651
+--- !u!4 &5548297685715715441
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5868580478492600212}
+  m_GameObject: {fileID: 5548297685715715443}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -31,15 +33,73 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3935901257653230423
+--- !u!114 &5548297685715715442
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5868580478492600212}
+  m_GameObject: {fileID: 5548297685715715443}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ed31c8aea4fec5a4da0952b35ab788b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  matchTimer: {fileID: 0}
+  playerEnergySlider: {fileID: 0}
+  enemyEnergySlider: {fileID: 0}
+  playerMode: 0
+  enemyMode: 0
+  playerSpawnCost: 0
+  enemySpawnCost: 0
+  playerEnergyRegeneration: 0
+  enemyEnergyRegeneration: 0
+  isSetup: 0
+  playerEnergy: 0
+  enemyEnergy: 0
+  timerIsRunning: 0
+  ball: {fileID: 0}
+  ballScript: {fileID: 0}
+  playerTeam: []
+  enemyTeam: []
+  ui_LoadMatch: {fileID: 0}
+  ui_EndMatch: {fileID: 0}
+  ui_GameModeInfo: {fileID: 0}
+  ui_PlayName: {fileID: 0}
+  ui_EnemyName: {fileID: 0}
+  ui_PlayScoreText: {fileID: 0}
+  ui_EnemyScoreText: {fileID: 0}
+--- !u!114 &5548297685715715440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5548297685715715443}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c2c959d5fccd6e4a8b4cd88cbc0c0e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pooledPlayer: []
+  pooledEnemy: []
+  enemyToPool: {fileID: 1274340693111999980, guid: 834ef06a874080b4a90b883b9b4993e5, type: 3}
+  playerToPool: {fileID: 8172637191586040700, guid: f17e0b091fec63f41aeb322d2e5e1f27, type: 3}
+--- !u!114 &5548297685715715455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5548297685715715443}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2d1b92217ff8334690fbf02bc5ec1d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 1024

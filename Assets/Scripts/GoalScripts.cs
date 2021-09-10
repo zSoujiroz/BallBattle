@@ -9,9 +9,12 @@ public class GoalScripts : MonoBehaviour
         var otherTag = other.gameObject.tag;
         if (otherTag == "Ball")
         {
-            if(other.gameObject.transform.parent != null)
+            GameObject ballOwner = GameManager.instance.ballScript.GetBallOwner();
+            //GameObject ballOwner = ballScript.GetBallOwner();
+            //if(other.gameObject.transform.parent != null)
+            if (ballOwner != null)
             {
-                GameObject ballOwner = other.gameObject.transform.parent.gameObject;
+                //GameObject ballOwner = other.gameObject.transform.parent.gameObject;
                 Player_Scripts ballOwnerScripts = ballOwner.GetComponent<Player_Scripts>();
                 ballOwnerScripts.StopMoving();
                 ballOwnerScripts.SetPlayerState(Player_Scripts.Player_State.CATCH_GOAL);
