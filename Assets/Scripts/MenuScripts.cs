@@ -9,7 +9,7 @@ public class MenuScripts : MonoBehaviour
     public Toggle arMode;
     void Start()
     {
-        arMode.isOn = GameManager.instance.GetArMode();
+        arMode.isOn = GameOptions.sharedinstance.GetArMode();
 
         arMode.onValueChanged.AddListener(delegate {
             ToggleValueChanged(arMode);

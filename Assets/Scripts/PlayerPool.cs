@@ -8,7 +8,7 @@ public class PlayerPool : MonoBehaviour
     public List<GameObject> pooledPlayer;
     public List<GameObject> pooledEnemy;
     public GameObject objectedToPool;
-    public GameObject detectionCircle;
+    //public GameObject detectionCircle;
     private int amountToPool = 11;
     private Transform Team1Holder;
     private Transform Team2Holder;
@@ -36,10 +36,10 @@ public class PlayerPool : MonoBehaviour
             tmp = Instantiate(objectedToPool, Team1Holder);
             Player_Scripts objectScript = tmp.GetComponent<Player_Scripts>();
             //objectScript.detectionCircle.SetActive(false);
-            if (!isAttacker)
+            //if (!isAttacker)
             {
-                tmp2 = Instantiate(detectionCircle, tmp.transform);
-                tmp2.name = "detectionCircle";
+                //tmp2 = Instantiate(detectionCircle, tmp.transform);
+                //tmp2.name = "detectionCircle";
             }
             objectScript.tag = "PlayerTeam1";
             objectScript.SetPlayerType(isAttacker);
@@ -60,10 +60,10 @@ public class PlayerPool : MonoBehaviour
         {
             tmp = Instantiate(objectedToPool, Team2Holder);
             Player_Scripts objectScript = tmp.GetComponent<Player_Scripts>();
-            if (!isAttacker)
+            //if (!isAttacker)
             {
-                tmp2 = Instantiate(detectionCircle, tmp.transform);
-                tmp2.name = "detectionCircle";
+                //tmp2 = Instantiate(detectionCircle, tmp.transform);
+                //tmp2.name = "detectionCircle";
             }
             objectScript.tag = "PlayerTeam2";
             objectScript.SetPlayerType(isAttacker);

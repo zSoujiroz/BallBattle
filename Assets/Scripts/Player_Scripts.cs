@@ -25,7 +25,8 @@ public class Player_Scripts : MonoBehaviour
 		GO_ORIGIN,
 		INACTIVATED,
 		ACTIVATED,
-		CATCH_GOAL
+		CATCH_GOAL,
+		END_MATCH
 	};
 
 
@@ -41,8 +42,8 @@ public class Player_Scripts : MonoBehaviour
 	private float def_ReturnSpeed = 2f;
 	private float def_DetectionRange = 0.35f;
 
-	[SerializeField]
-	public GameObject detectionCircle;
+	//[SerializeField]
+	//public GameObject detectionCircle;
 
 	//private GameObject[] allTeam1Players;
 	//private GameObject[] allTeam2Players;
@@ -64,20 +65,8 @@ public class Player_Scripts : MonoBehaviour
 	{
 		originPos = gameObject.transform.position;
 		ball = GameObject.FindGameObjectWithTag("Ball");
-		detectionCircle = GameManager.instance.GetChildWithName(gameObject, "detectionCircle");
+		//detectionCircle = GameManager.instance.GetChildWithName(gameObject, "detectionCircle");
 		detectionLength = GameManager.instance.GetFieldLength() * def_DetectionRange;
-
-		
-		//if (gameObject.tag == "PlayerTeam1")
-		if (GameManager.instance.playerMode == GameManager.PlayerMode.ATTACKER)
-		{
-			goalTarget = GameObject.FindGameObjectWithTag("GoalTeam2").transform.position;
-		}
-		else
-		{
-			goalTarget = GameObject.FindGameObjectWithTag("GoalTeam1").transform.position;
-		}
-
 		playerState = Player_State.INIT;		
 	}
 
@@ -86,6 +75,14 @@ public class Player_Scripts : MonoBehaviour
 		switch ( playerState ) 
 		{
 			case Player_State.INIT:
+				if (GameManager.instance.playerMode == GameManager.PlayerMode.ATTACKER)
+				{
+					goalTarget = GameObject.FindGameObjectWithTag("GoalTeam2").transform.position;
+				}
+				else
+				{
+					goalTarget = GameObject.FindGameObjectWithTag("GoalTeam1").transform.position;
+				}
 				playerState = Player_State.INACTIVATED;
 			break;
 
@@ -163,11 +160,11 @@ public class Player_Scripts : MonoBehaviour
 			case Player_State.STAND_BY:
 				if (typePlayer == TypePlayer.DEFENDER)
 				{
-					detectionCircle.SetActive(true);
+					//detectionCircle.SetActive(true);
 					if (CheckIfAttackerComeInside())
 					{
 						playerState = Player_State.CHASING_BALL;
-						detectionCircle.SetActive(false);
+						//detectionCircle.SetActive(false);
 					}
 				}
 			break;
@@ -175,7 +172,7 @@ public class Player_Scripts : MonoBehaviour
 			case Player_State.INACTIVATED:
 				if (typePlayer == TypePlayer.DEFENDER)
 				{
-					detectionCircle.SetActive(false);
+					//detectionCircle.SetActive(false);
 				}	
 
 				if (!isActivating)
@@ -212,21 +209,25 @@ public class Player_Scripts : MonoBehaviour
 			break;
 
 			case Player_State.CATCH_GOAL:
+				//Reset Ball
+				Rigidbody rgBall = ball.gameObject.GetComponent<Rigidbody>();
+				rgBall.isKinematic = false;
+				ball.transform.SetParent(null);
+				ball.transform.position = Vector3.zero;
+
+				playerState	= Player_State.END_MATCH;
+
 				Debug.Log("Catch goal");
 				bool isWin = true; // win match
 				GameManager.instance.EndMatch(isWin);
 				// End match -> You win Match -> start new match.
 			break;
+
+			case Player_State.END_MATCH:
+				// Play animation win!
+			break;
 		}
 	}
-
-	// private void updateTeamMembers()
-	// {
-	// 	var temp = gameObject.tag;
-
-	// 	allTeam1Players = GameObject.FindGameObjectsWithTag("PlayerTeam1");
-	// 	allTeam2Players = GameObject.FindGameObjectsWithTag("PlayerTeam2");
-	// }
 
 	private IEnumerator ReActivePlayer()
 	{
@@ -389,18 +390,13 @@ public class Player_Scripts : MonoBehaviour
 
 	private Transform CheckIfAttackerComeInside()
 	{
-		GameObject targetEnemy = null;
-
 		Collider[] rangeChecks = Physics.OverlapSphere(transform.position, detectionLength, ballLayerMask);
 		if (rangeChecks.Length != 0)
 		{
 			if (rangeChecks[0].transform.gameObject.tag == "Ball")
 				return rangeChecks[0].transform;
 		} 
-
 		//Debug.Log("check length = " + detectionLength);
-
 		return null;
-	}
-	
+	}	
 }

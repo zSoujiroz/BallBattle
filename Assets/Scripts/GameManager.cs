@@ -27,7 +27,7 @@ public class GameManager : MonoBehaviour
     public Slider enemyEnergySlider;
 
     private int matchPerGame = 5;
-    private float timeLimit = 140f;
+    private float timeLimit = 20f;//140f;
     private float timeRush = 15f;
     private int maxEnergy = 6;
 
@@ -39,6 +39,7 @@ public class GameManager : MonoBehaviour
 	private float def_EnergyCost = 3f;
 
     private bool arMode = false;
+    private GameMode gameMode;
 
     [HideInInspector]
     public PlayerMode playerMode;
@@ -55,6 +56,9 @@ public class GameManager : MonoBehaviour
     [HideInInspector]
     public float enemyEnergyRegeneration;
 
+    private float playerSpawnRate;
+    private float enemySpawnRate;
+
 
     [HideInInspector]
     public bool isSetup = false;
@@ -64,13 +68,18 @@ public class GameManager : MonoBehaviour
     [HideInInspector]
     public float enemyEnergy;
 
+    private Vector3 minEnemyField;
+    private Vector3 maxEnemyField;
+
     private float lastPlayerFillEnergy;
     private float lastEnemyFillEnergy;
 
     private float fieldLength;
 
     private float timeRemaining;
-    private bool timerIsRunning = false;
+    [HideInInspector]
+    public bool timerIsRunning = false;
+    private float MatchStartDelay = 2f;
 
     private bool isRushTime;
     private int playerScore;
@@ -78,8 +87,21 @@ public class GameManager : MonoBehaviour
     
     private int gameMatch;
 
+    private GameObject ball;
+
     public List<GameObject> playerTeam;
     public List<GameObject> enemyTeam;
+
+    public GameObject ui_LoadMatch;
+    public GameObject ui_EndMatch;
+    public GameObject ui_GameModeInfo;
+    public TextMeshProUGUI ui_PlayName;
+    public TextMeshProUGUI ui_EnemyName;
+    public TextMeshProUGUI ui_PlayScoreText;
+    public TextMeshProUGUI ui_EnemyScoreText;
+    private TextMeshProUGUI ui_MatchText;
+    
+
 
     void Awake()
     {
@@ -93,14 +115,14 @@ public class GameManager : MonoBehaviour
         }
 
         DontDestroyOnLoad(gameObject);
-
-        //InitGame();
     }
 
     void Start()
     {
-        fieldLength = FootballField();
-        MatchSetup(2);        
+        FootballField();
+        EnemyField();
+
+        ball = GameObject.FindGameObjectWithTag("Ball");  
     }
 
     void Update()
@@ -126,62 +148,83 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void InitGame(GameMode mode)
+    public void PlayWithAIMode()
     {
-        Debug.Log("Init Game");
-        switch (mode)
-        {
-            case GameMode.Player_Player:
-                // player1 -> PlayerTeam1
-                // player2 -> PLayerTeam2
-            break;
-
-            case GameMode.Player_AI:
-                // player -> PlayerTeam1
-                // AI -> PlayerTeam2
-            break;
-        }
-
-        playerScore = 0;
-        enemyScore = 0;
-        isRushTime = false;
+        gameMode = GameMode.Player_AI;
+        InitGame();
     }
 
-    void InitMatch(int level)
+    public void PlayWithFiendsMode()
     {
+        gameMode = GameMode.Player_Player;
+        InitGame();
+    }
+
+    void InitGame()
+    {
+        Debug.Log("Init Game");
+
+        gameMatch = 1;
+        playerScore = 0;
+        enemyScore = 0;
+
+        PlayerPool.SharedInstance.InitPlayer(playerMode == PlayerMode.ATTACKER);
+        PlayerPool.SharedInstance.InitEnemy(enemyMode == PlayerMode.ATTACKER);
+
+        InitMatch();
+    }
+
+    void InitMatch()
+    {
+        DisplayLoadMatch();
+        isRushTime = false;   
+
+        Rigidbody rgBall = ball.gameObject.GetComponent<Rigidbody>();
+        rgBall.isKinematic = false;
+        ball.transform.SetParent(null);
+        ball.transform.position = Vector3.zero; 
+
+
         // match level 1 -> PlayerTeam2 will be defender
         // match level 2 -> PlayerTeam2 will be attacker
-        if (level < 6)  //normal match (5 match)
+        if (gameMatch < 6)  //normal match (5 match)
         {
-            if ((level % 2) != 0)
+            if ((gameMatch % 2) != 0)
             {
                 playerMode = PlayerMode.ATTACKER;
                 playerSpawnCost = att_EnergyCost;
                 playerEnergyRegeneration = att_EnergyRegeneration;
+                playerSpawnRate = att_SpawnRate;
 
                 enemyMode = PlayerMode.DEFENDER;
                 enemySpawnCost = def_EnergyCost;
                 enemyEnergyRegeneration = def_EnergyRegeneration;
+                enemySpawnRate = def_SpawnRate;
             }
             else
             {
                 playerMode = PlayerMode.DEFENDER;
                 playerSpawnCost = def_EnergyCost;
                 playerEnergyRegeneration = def_EnergyRegeneration;
+                playerSpawnRate = def_SpawnRate;
 
                 enemyMode = PlayerMode.ATTACKER;
                 enemySpawnCost = att_EnergyCost;
                 enemyEnergyRegeneration = att_EnergyRegeneration;
+                enemySpawnRate = att_SpawnRate;
             }
 
-            PlayerPool.SharedInstance.InitPlayer(playerMode == PlayerMode.ATTACKER);
-            PlayerPool.SharedInstance.InitEnemy(enemyMode == PlayerMode.ATTACKER);
+            //PlayerPool.SharedInstance.InitPlayer(playerMode == PlayerMode.ATTACKER);
+            //PlayerPool.SharedInstance.InitEnemy(enemyMode == PlayerMode.ATTACKER);
+
         }
-        else if (level == 6)
+        else if (gameMatch == 6)
         {
             playerMode = PlayerMode.PENALTY;
             enemyMode = PlayerMode.NONE;
-        }        
+        }
+
+        MatchSetup();
     }
 
     void GameSetup()
@@ -222,13 +265,10 @@ public class GameManager : MonoBehaviour
         enemyEnergySlider.value = enemyEnergy;
     }
 
-    void MatchSetup(int level)
+    void MatchSetup()
     {
         timerIsRunning = false;
         isSetup = true; // start setup matching
-        // level 1..5 -> normal game
-        // level 6 -> Penalty - Maze game
-        InitMatch(level);
 
         timeRemaining = timeLimit;
         playerEnergy = maxEnergy;
@@ -241,9 +281,28 @@ public class GameManager : MonoBehaviour
         enemyEnergySlider.maxValue = maxEnergy;
 
         UpdateEnergySlider();
+        UpdatePlayerName();
 
+        ResetPlayer();
+
+        Time.timeScale = 1f;
         isSetup = false;
-        timerIsRunning = true;
+        //timerIsRunning = true;
+
+    }
+
+    public void ResetPlayer()
+    {
+        foreach (GameObject go in playerTeam)
+        {
+            go.SetActive(false);            
+        }
+        foreach (GameObject go in enemyTeam)
+        {
+            go.SetActive(false);            
+        }
+        enemyTeam = new List<GameObject>();
+        playerTeam = new List<GameObject>();
 
     }
 
@@ -256,22 +315,44 @@ public class GameManager : MonoBehaviour
             else
                 enemyScore +=1;
         }
-        Debug.Log("End Match");
+        //check endgame
+        if (CheckEndGame() == false)
+        {
+            StartNewMatch();
+        }
+        else
+        {
+            Debug.Log("End Match true");
+            Debug.Log("playerScore = "+ playerScore);
+            Debug.Log("enemyScore = "+ enemyScore);
+            EndGame();
+        }
     }
 
-    void EndGame()
+    public void EndGame()
     {
-        Debug.Log("End Game");
+        Debug.Log("End game");
+        DisplayEndMatch();
+
     }
 
-    public void SetArMode(bool mode)
+    public bool CheckEndGame()
     {
-        this.arMode = mode;
-    }
-
-    public bool GetArMode()
-    {
-        return this.arMode;
+        if (gameMatch == 5)
+        {
+            if (playerScore == enemyScore)
+                return false; //Should launch Penalty match
+            else
+                return true; //Player/Enemy win the game!
+        }
+        else if (gameMatch == 6)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }   
     }
 
     private void RefillPlayerEnergy()
@@ -302,25 +383,153 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
-    private float FootballField()
+    public void StartNewMatch()
+    {
+        gameMatch++;
+        InitMatch();
+
+    }
+
+    void UpdatePlayerName()
+    {
+        if(gameMatch < 6)
+        {
+            //Update name
+            if (playerMode == PlayerMode.ATTACKER)
+            {
+                ui_PlayName.text = "Player (Attacker)";
+                if (gameMode == GameMode.Player_AI)
+                {
+                    ui_EnemyName.text = "Enemy AI (Defender)";
+                }
+                else
+                {
+                    ui_EnemyName.text = "Enemy (Defender)";
+                }                
+            }
+            else
+            {
+                ui_PlayName.text = "Player (Defender)";
+                if (gameMode == GameMode.Player_AI)
+                {
+                    ui_EnemyName.text = "Enemy AI (Attacker)";
+                }
+                else
+                {
+                    ui_EnemyName.text = "Enemy (Attacker)";
+                }  
+            }
+            ui_GameModeInfo.SetActive(true);
+        }
+        else
+        {
+            // Penalty Maze game -> Hide this Info
+            ui_GameModeInfo.SetActive(false);
+        }
+    }
+
+
+    void DisplayEndMatch()
+    {
+        ui_PlayScoreText.text = playerScore + "";
+        ui_EnemyScoreText.text = enemyScore + "";
+
+        ui_LoadMatch.SetActive(true);
+        Invoke("HideEndMatch", MatchStartDelay);
+    }
+
+    void HideEndMatch()
+    {
+        ui_LoadMatch.SetActive(false);
+    }
+
+    void DisplayLoadMatch()
+    {
+        if (ui_LoadMatch)
+        {
+            TextMeshProUGUI matchText = GetChildWithName(ui_LoadMatch, "LoadMatchText").GetComponent<TextMeshProUGUI>(); 
+            matchText.text = "Match : " + gameMatch;
+
+            ui_LoadMatch.SetActive(true);
+            Invoke("HideLoadMatch", MatchStartDelay);
+        }
+    }
+    void HideLoadMatch()
+    {
+        ui_LoadMatch.SetActive(false);
+        timerIsRunning = true;
+    }
+
+    private void FootballField()
     {
         GameObject field = GameObject.FindGameObjectWithTag("FootballField");
+        if (field)
+        {
+            Mesh planeMesh = field.GetComponent<MeshFilter>().mesh;
+            Bounds bounds = planeMesh.bounds;
 
-        Mesh planeMesh = field.GetComponent<MeshFilter>().mesh;
-        Bounds bounds = planeMesh.bounds;
+            float boundsX = field.transform.localScale.x * bounds.size.x;
+            float boundsY = field.transform.localScale.y * bounds.size.y;
+            float boundsZ = field.transform.localScale.z * bounds.size.z;
 
-        float boundsX = field.transform.localScale.x * bounds.size.x;
-        float boundsY = field.transform.localScale.y * bounds.size.y;
-        float boundsZ = field.transform.localScale.z * bounds.size.z;
+            fieldLength = Mathf.Max(Mathf.Max(boundsX, boundsY), boundsZ);
+        }
+    }
 
-        float fLength = Mathf.Max(Mathf.Max(boundsX, boundsY), boundsZ);
+    private void EnemyField()
+    {
+        GameObject field = GameObject.FindGameObjectWithTag("EnemyField");
+        if (field)
+        {
+            Vector3 posLB = GetChildWithName(field, "LB").transform.position;
+            Vector3 posRT = GetChildWithName(field, "RT").transform.position;
 
-        return fLength;
+            minEnemyField = Vector3.Min(posLB ,posRT);
+            maxEnemyField = Vector3.Max(posLB ,posRT);
+
+            // Debug.Log("minField " + minField);
+            // Debug.Log("maxField " + maxField);
+        }
+    }
+
+    public Vector3 GetMinEnemyField()
+    {
+        return minEnemyField;
+    }
+
+    public Vector3 GetMaxEnemyField()
+    {
+        return maxEnemyField;
     }
 
     public float GetFieldLength()
     {
         return fieldLength;
+    }
+
+    public int GetCurrentMatch()
+    {
+        return gameMatch;
+    }
+
+    public PlayerMode GetPlayerMode()
+    {
+        return playerMode;
+    }
+
+    public GameMode GetGameMode()
+    {
+        return gameMode;
+    }
+
+    public float GetPlayerSpawnRate()
+    {
+        return playerSpawnRate;
+    }
+
+    public float GetEnemySpawnRate()
+    {
+        return enemySpawnRate;
     }
 
 }
