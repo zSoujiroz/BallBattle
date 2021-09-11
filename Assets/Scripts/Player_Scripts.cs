@@ -98,6 +98,7 @@ public class Player_Scripts : MonoBehaviour
 		switch ( playerState ) 
 		{
 			case Player_State.INIT:
+				animator.SetInteger("PlayerAnimationState", 5); // Dancing
 				RotationToTarget(GameManager.instance.ball.transform.position);
 				if (GameManager.instance.playerMode == GameManager.PlayerMode.ATTACKER)
 				{
@@ -135,7 +136,6 @@ public class Player_Scripts : MonoBehaviour
 			case Player_State.MOVE_AUTOMATIC:
 				if (typePlayer == TypePlayer.ATTACKER)
 				{
-					//animator.Play("FastRun");
 					animator.SetInteger("PlayerAnimationState", 2); // FastRun = 2
 					float step =  att_NormalSpeed * Time.deltaTime;
 					MoveToTarget(goalTarget, step);
@@ -145,6 +145,7 @@ public class Player_Scripts : MonoBehaviour
 			case Player_State.PASSING:
 				if (typePlayer == TypePlayer.ATTACKER)
 				{
+					//animator.SetInteger("PlayerAnimationState", 3); // pass ball = 2
 					GameObject closetPlayer = null;
 					if (GameManager.instance.playerMode == GameManager.PlayerMode.ATTACKER)
 					{
@@ -160,8 +161,6 @@ public class Player_Scripts : MonoBehaviour
 			break;
 
 			case Player_State.GO_ORIGIN:
-				//Debug.Log("Origin position: x = " + originPos.x + " y = " + originPos.y + " z = " + originPos.z)
-				//animator.Play("SlowRun");
 				animator.SetInteger("PlayerAnimationState", 2); // FastRun = 2
 				MoveToTarget(originPos, def_NormalSpeed * Time.deltaTime);
 
@@ -242,7 +241,7 @@ public class Player_Scripts : MonoBehaviour
 			break;
 
 			case Player_State.CATCH_GOAL:
-				//animator.Play("Dancing");
+				animator.SetInteger("PlayerAnimationState", 5); // Dancing
 				//Reset Ball
 				Rigidbody rgBall = GameManager.instance.ball.gameObject.GetComponent<Rigidbody>();
 				rgBall.isKinematic = false;
@@ -251,7 +250,7 @@ public class Player_Scripts : MonoBehaviour
 
 				playerState	= Player_State.END_MATCH;
 
-				Debug.Log("Catch goal");
+				//Debug.Log("Catch goal");
 				bool isWin = true; // win match
 				GameManager.instance.EndMatch(isWin);
 				// End match -> You win Match -> start new match.

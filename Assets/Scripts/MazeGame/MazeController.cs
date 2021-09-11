@@ -11,7 +11,7 @@ public class MazeController : MonoBehaviour {
 
 	private float[] footballField;
 
-	public Transform mazeHolder;
+	private Transform mazeHolder;
 
 	void Start()
 	{

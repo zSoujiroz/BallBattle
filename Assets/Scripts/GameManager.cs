@@ -112,7 +112,8 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI ui_EnemyScoreFinalText;
 
 
-    public MazeController mazeController;
+    
+    private MazeController mazeController;
     
 
 
@@ -210,7 +211,7 @@ public class GameManager : MonoBehaviour
 
     private void SetRandomBallPosition()
     {
-        ball.transform.position = new Vector3((int)(Random.Range(0, foobalField[0])/2f) + 0.5f, ball.transform.position.y, (int)(Random.Range(0f, foobalField[1])/2f) + 0.5f);
+        ball.transform.position = new Vector3((int)(Random.Range(0, foobalField[0])/2f) + 0.5f, 0.2f, (int)(Random.Range(0f, foobalField[1])/2f) + 0.5f);
     }
 
     void InitGame()
@@ -230,7 +231,7 @@ public class GameManager : MonoBehaviour
         Rigidbody rgBall = ball.gameObject.GetComponent<Rigidbody>();
         rgBall.isKinematic = false;
         ballScript.SetBallOwner(null);
-        ball.transform.position = new Vector3(0f, ball.transform.position.y, 0f); 
+        ball.transform.position = new Vector3(0f, 0.2f, 0f); 
 
 
         // match level 1 -> PlayerTeam2 will be defender
