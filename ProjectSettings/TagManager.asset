@@ -12,6 +12,7 @@ TagManager:
   - FootballField
   - PlayerField
   - EnemyField
+  - ConnerField
   layers:
   - Default
   - TransparentFX
