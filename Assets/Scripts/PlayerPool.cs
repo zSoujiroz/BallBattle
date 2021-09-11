@@ -5,7 +5,9 @@ using UnityEngine;
 public class PlayerPool : MonoBehaviour
 {
     public static PlayerPool SharedInstance;
+    [HideInInspector]
     public List<GameObject> pooledPlayer;
+    [HideInInspector]
     public List<GameObject> pooledEnemy;
     public GameObject enemyToPool;
     public GameObject playerToPool;

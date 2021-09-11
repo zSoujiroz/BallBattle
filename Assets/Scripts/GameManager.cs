@@ -75,6 +75,7 @@ public class GameManager : MonoBehaviour
     private float lastEnemyFillEnergy;
 
     private float fieldLength;
+    private float[] foobalField;
 
     private float timeRemaining;
     [HideInInspector]
@@ -92,8 +93,9 @@ public class GameManager : MonoBehaviour
     [HideInInspector]
     public BallScript ballScript;
 
-
+    [HideInInspector]
     public List<GameObject> playerTeam;
+    [HideInInspector]
     public List<GameObject> enemyTeam;
 
     public GameObject ui_LoadMatch;
@@ -104,6 +106,8 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI ui_PlayScoreText;
     public TextMeshProUGUI ui_EnemyScoreText;
     private TextMeshProUGUI ui_MatchText;
+
+    public MazeController mazeController;
     
 
 
@@ -119,15 +123,15 @@ public class GameManager : MonoBehaviour
         }
 
         DontDestroyOnLoad(gameObject);
+
+        InitBallBattleField();
     }
 
     void Start()
     {
-        FootballField();
-        EnemyField();
-
         ball = GameObject.FindGameObjectWithTag("Ball");  
         ballScript = ball.GetComponent<BallScript>();
+        mazeController = GetComponent<MazeController>();
     }
 
     void Update()
@@ -153,6 +157,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void InitBallBattleField()
+    {
+        FootballField();
+        EnemyField();
+    }
+
     public void PlayWithAIMode()
     {
         gameMode = GameMode.Player_AI;
@@ -162,7 +172,13 @@ public class GameManager : MonoBehaviour
     public void PlayWithFiendsMode()
     {
         gameMode = GameMode.Player_Player;
-        InitGame();
+        GeneratePenaltyMap();
+        //InitGame();
+    }
+
+    public void GeneratePenaltyMap()
+    {
+        mazeController.CreateMazeMap();
     }
 
     void InitGame()
@@ -480,7 +496,16 @@ public class GameManager : MonoBehaviour
             float boundsZ = field.transform.localScale.z * bounds.size.z;
 
             fieldLength = Mathf.Max(Mathf.Max(boundsX, boundsY), boundsZ);
+
+            foobalField = new float[]{boundsX, boundsZ};
         }
+    }
+
+    public float[] GetFootBallField()
+    {
+        Debug.Log("with = " + foobalField[0]);
+        Debug.Log("length = " + foobalField[1]);
+        return foobalField;
     }
 
     private void EnemyField()
@@ -494,8 +519,8 @@ public class GameManager : MonoBehaviour
             minEnemyField = Vector3.Min(posLB ,posRT);
             maxEnemyField = Vector3.Max(posLB ,posRT);
 
-            // Debug.Log("minField " + minField);
-            // Debug.Log("maxField " + maxField);
+            Debug.Log("minField " + minEnemyField);
+            Debug.Log("maxField " + maxEnemyField);
         }
     }
 
