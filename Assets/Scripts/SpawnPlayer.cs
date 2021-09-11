@@ -69,7 +69,7 @@ public class SpawnPlayer : MonoBehaviour
     {
         float xPos = Random.Range(minEnemyField.x, maxEnemyField.x);
         float zPos = Random.Range(minEnemyField.z, maxEnemyField.z);
-        Debug.Log("xPos = " +  xPos + " zPos = " + zPos);
+        //Debug.Log("xPos = " +  xPos + " zPos = " + zPos);
         return new Vector3(xPos, 0f, zPos);
     }
 

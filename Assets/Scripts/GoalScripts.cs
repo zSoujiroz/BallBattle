@@ -10,14 +10,12 @@ public class GoalScripts : MonoBehaviour
         if (otherTag == "Ball")
         {
             GameObject ballOwner = GameManager.instance.ballScript.GetBallOwner();
-            //GameObject ballOwner = ballScript.GetBallOwner();
-            //if(other.gameObject.transform.parent != null)
             if (ballOwner != null)
             {
-                //GameObject ballOwner = other.gameObject.transform.parent.gameObject;
                 Player_Scripts ballOwnerScripts = ballOwner.GetComponent<Player_Scripts>();
-                ballOwnerScripts.StopMoving();
-                ballOwnerScripts.SetPlayerState(Player_Scripts.Player_State.CATCH_GOAL);
+
+                ballOwnerScripts.SetPlayerState(Player_Scripts.Player_State.END_MATCH);
+                GameManager.instance.EndMatch(true);
             }
             else
             {
@@ -47,11 +45,13 @@ public class GoalScripts : MonoBehaviour
             if (otherTag == "PlayerTeam1")
             {
                 Player_Scripts otherScripts = other.GetComponent<Player_Scripts>();
-                otherScripts.StopMoving();
 
                 if (otherScripts.GetPlayerState() == Player_Scripts.Player_State.HOLDING_BALL)
+                {
+                    otherScripts.StopMoving();
                     otherScripts.SetPlayerState(Player_Scripts.Player_State.CATCH_GOAL);
-                else
+                }
+                else if (otherScripts.GetPlayerState() != Player_Scripts.Player_State.PENALTY)
                 {
                     GameManager.instance.playerTeam.Remove(other.gameObject);
                     other.gameObject.SetActive(false);

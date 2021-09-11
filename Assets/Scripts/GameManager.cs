@@ -107,6 +107,11 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI ui_EnemyScoreText;
     private TextMeshProUGUI ui_MatchText;
 
+    public GameObject ui_EndGame;
+    public TextMeshProUGUI ui_PlayScoreFinalText;
+    public TextMeshProUGUI ui_EnemyScoreFinalText;
+
+
     public MazeController mazeController;
     
 
@@ -132,6 +137,9 @@ public class GameManager : MonoBehaviour
         ball = GameObject.FindGameObjectWithTag("Ball");  
         ballScript = ball.GetComponent<BallScript>();
         mazeController = GetComponent<MazeController>();
+
+        PlayerPool.SharedInstance.InitPlayer(playerMode == PlayerMode.ATTACKER);
+        PlayerPool.SharedInstance.InitEnemy(enemyMode == PlayerMode.ATTACKER);
     }
 
     void Update()
@@ -172,25 +180,44 @@ public class GameManager : MonoBehaviour
     public void PlayWithFiendsMode()
     {
         gameMode = GameMode.Player_Player;
-        GeneratePenaltyMap();
-        //InitGame();
+        InitGame();
     }
 
     public void GeneratePenaltyMap()
     {
         mazeController.CreateMazeMap();
+
+        //Set bal as random position
+        SetRandomBallPosition();
+
+        //Set Player in front of the gate
+        SpawnPenaltyPlayer();
+    }
+
+    private void SpawnPenaltyPlayer()
+    {
+        GameObject ob = PlayerPool.SharedInstance.GetPooledPlayer();
+        if (ob != null)
+        {
+            Player_Scripts obScripts = ob.GetComponent<Player_Scripts>();
+            obScripts.SetPlayerType(true);
+            obScripts.SetPlayerState(Player_Scripts.Player_State.PENALTY);
+            ob.SetActive(true);
+            playerTeam.Add(ob);
+            ob.transform.position = new Vector3(0.5f , ob.transform.position.y, -(fieldLength - 1f)/2f);
+        }
+    }
+
+    private void SetRandomBallPosition()
+    {
+        ball.transform.position = new Vector3((int)(Random.Range(0, foobalField[0])/2f) + 0.5f, ball.transform.position.y, (int)(Random.Range(0f, foobalField[1])/2f) + 0.5f);
     }
 
     void InitGame()
     {
-        Debug.Log("Init Game");
-
         gameMatch = 1;
         playerScore = 0;
         enemyScore = 0;
-
-        PlayerPool.SharedInstance.InitPlayer(playerMode == PlayerMode.ATTACKER);
-        PlayerPool.SharedInstance.InitEnemy(enemyMode == PlayerMode.ATTACKER);
 
         InitMatch();
     }
@@ -202,9 +229,8 @@ public class GameManager : MonoBehaviour
 
         Rigidbody rgBall = ball.gameObject.GetComponent<Rigidbody>();
         rgBall.isKinematic = false;
-        //ball.transform.SetParent(null);
         ballScript.SetBallOwner(null);
-        ball.transform.position = new Vector3(0f, 0.2f, 0f); 
+        ball.transform.position = new Vector3(0f, ball.transform.position.y, 0f); 
 
 
         // match level 1 -> PlayerTeam2 will be defender
@@ -235,26 +261,15 @@ public class GameManager : MonoBehaviour
                 enemyEnergyRegeneration = att_EnergyRegeneration;
                 enemySpawnRate = att_SpawnRate;
             }
-
-            //PlayerPool.SharedInstance.InitPlayer(playerMode == PlayerMode.ATTACKER);
-            //PlayerPool.SharedInstance.InitEnemy(enemyMode == PlayerMode.ATTACKER);
-
         }
         else if (gameMatch == 6)
         {
             playerMode = PlayerMode.PENALTY;
             enemyMode = PlayerMode.NONE;
+            GeneratePenaltyMap();
         }
 
         MatchSetup();
-    }
-
-    void GameSetup()
-    {
-        // Player vs Player
-        // Player vs AI
-        //MatchSetup(gameMatch);
-        //PlayerPool.SharedInstance.InitPlayer();
     }
 
     private void GeneratePlayerEnergy()
@@ -305,12 +320,10 @@ public class GameManager : MonoBehaviour
         UpdateEnergySlider();
         UpdatePlayerName();
 
-        ResetPlayer();
+        //ResetPlayer();
 
         Time.timeScale = 1f;
         isSetup = false;
-        //timerIsRunning = true;
-
     }
 
     public void ResetPlayer()
@@ -332,31 +345,32 @@ public class GameManager : MonoBehaviour
     {
         if (isWin)
         {
-            if (playerMode == PlayerMode.ATTACKER)
+            if (playerMode == PlayerMode.PENALTY)
+            {
+                mazeController.ClearMazeMap();
+                playerScore += 1;
+            }
+            else if (playerMode == PlayerMode.ATTACKER)
                 playerScore += 1;
             else
                 enemyScore +=1;
         }
-        DisplayEndMatch();
-        //check endgame
+        
         if (CheckEndGame() == false)
         {
+            ResetPlayer();
+            DisplayEndMatch();
             StartNewMatch();
         }
         else
         {
-            Debug.Log("End Match true");
-            Debug.Log("playerScore = "+ playerScore);
-            Debug.Log("enemyScore = "+ enemyScore);
             EndGame();
         }
     }
 
     public void EndGame()
     {
-        Debug.Log("End game");
-        DisplayEndMatch();
-
+        DisplayEndGame();
     }
 
     public bool CheckEndGame()
@@ -410,7 +424,6 @@ public class GameManager : MonoBehaviour
     {
         gameMatch++;
         InitMatch();
-
     }
 
     void UpdatePlayerName()
@@ -451,6 +464,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    void DisplayEndGame()
+    {
+        ui_PlayScoreFinalText.text = playerScore + "";
+        ui_EnemyScoreFinalText.text = enemyScore + "";
+        ui_EndGame.SetActive(true);
+    }
 
     void DisplayEndMatch()
     {

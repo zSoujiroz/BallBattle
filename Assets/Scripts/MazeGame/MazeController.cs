@@ -11,38 +11,37 @@ public class MazeController : MonoBehaviour {
 
 	private float[] footballField;
 
-	private Transform mazeHolder;
+	public Transform mazeHolder;
 
 	void Start()
 	{
 		footballField = GameManager.instance.GetFootBallField();
 		mazeRows = (int)footballField[0];
 		mazeColumns = (int)footballField[1];
+
+		mazeHolder = new GameObject ("PenaltyMaps").transform;
 	}
 
 	// Use this for initialization
 	public void CreateMazeMap () 
 	{
+		
 		InitializeMaze ();
 
 		MazeAlgorithm ma = new HuntAndKillMazeAlgorithm (mazeCells);
 		ma.CreateMaze ();
 	}
 
+	public void ClearMazeMap()
+	{
+		foreach (Transform child in mazeHolder.transform) {
+			GameObject.Destroy(child.gameObject);
+		}
+		mazeHolder.position = Vector3.zero;
+	}
+
 	private void InitializeMaze() {
-
-		//GameObject footballField = GameObject.FindGameObjectWithTag("ConnerField");
-		//Debug.Log("InitializeMaze footballField + " + footballField.transform.position);
-		//GameObject connerLB = GameManager.instance.GetChildWithName(footballField, "conner_LB");
-		//Vector3 pos = connerLB.transform.position;
-		//Debug.Log("InitializeMaze + " + pos);
-
-		//Vector3 initPos = footballField.transform.position;
-		//Vector3 initPos = Vector3.zero;
-
-		mazeCells = new MazeCell[mazeRows,mazeColumns];
-		
-		mazeHolder = new GameObject ("mazeMaps").transform;
+		mazeCells = new MazeCell[mazeRows,mazeColumns];		
 
 		for (int r = 0; r < mazeRows; r++) 
 		{

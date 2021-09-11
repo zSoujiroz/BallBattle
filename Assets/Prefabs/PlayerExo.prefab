@@ -689,6 +689,7 @@ GameObject:
   - component: {fileID: -1073689784182734630}
   - component: {fileID: -4282337294032274121}
   - component: {fileID: -4375969742573919087}
+  - component: {fileID: 3041827337568393051}
   m_Layer: 0
   m_Name: PlayerExo
   m_TagString: PlayerTeam2
@@ -705,7 +706,7 @@ Transform:
   m_GameObject: {fileID: 1274340693111999980}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
+  m_LocalScale: {x: 0.9, y: 0.9, z: 0.9}
   m_Children:
   - {fileID: 4653365760341454468}
   - {fileID: 1917529700593045599}
@@ -774,10 +775,28 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_Enabled: 1
-  m_Radius: 0.5
-  m_Height: 1
+  m_Radius: 0.40474382
+  m_Height: 2.2222707
   m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: -0.09525617, y: 0.6111341, z: 0}
+--- !u!143 &3041827337568393051
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1274340693111999980}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!1 &1285722646825402338
 GameObject:
   m_ObjectHideFlags: 0

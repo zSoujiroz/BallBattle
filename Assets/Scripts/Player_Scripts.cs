@@ -26,6 +26,7 @@ public class Player_Scripts : MonoBehaviour
 		INACTIVATED,
 		ACTIVATED,
 		CATCH_GOAL,
+		PENALTY,
 		END_MATCH
 	};
 
@@ -74,17 +75,22 @@ public class Player_Scripts : MonoBehaviour
 
 	private bool isActivating = false;
 
+	private float movementX;
+    private float movementY;
+
+	private  CharacterController characterController;
 
 
 	void Start()
 	{
 		animator = GetComponent<Animator>();
 		originPos = gameObject.transform.position;
+		characterController = GetComponent<CharacterController>();
 		//ball = GameObject.FindGameObjectWithTag("Ball");
 		//ballScript = ball.GetComponent<BallScript>();
 		//detectionCircle = GameManager.instance.GetChildWithName(gameObject, "detectionCircle");
 		detectionLength = GameManager.instance.GetFieldLength() * def_DetectionRange;
-		playerState = Player_State.INIT;		
+		//playerState = Player_State.INIT;		
 	}
 
 	void Update()
@@ -93,8 +99,6 @@ public class Player_Scripts : MonoBehaviour
 		{
 			case Player_State.INIT:
 				RotationToTarget(GameManager.instance.ball.transform.position);
-				//RotationToTarget(ball.transform.position);
-				//animator.Stop();
 				if (GameManager.instance.playerMode == GameManager.PlayerMode.ATTACKER)
 				{
 					goalTarget = GameObject.FindGameObjectWithTag("GoalTeam2").transform.position;
@@ -111,10 +115,8 @@ public class Player_Scripts : MonoBehaviour
 				if (typePlayer == TypePlayer.DEFENDER)
 				{
 					GameObject ballOwner = GameManager.instance.ballScript.GetBallOwner();
-					//if (ball.transform.parent != null)
 					if (ballOwner != null)
 					{
-						//GameObject ballOwner = ball.transform.parent.gameObject;
 						MoveToTarget(ballOwner.transform.position, def_NormalSpeed * Time.deltaTime);	
 					}
 				}
@@ -123,7 +125,6 @@ public class Player_Scripts : MonoBehaviour
 			case Player_State.HOLDING_BALL:
 				if (typePlayer == TypePlayer.ATTACKER)
 				{
-					//animator.Play("SlowRun");
 					animator.SetInteger("PlayerAnimationState", 1); // SlowRun = 2
 					//if (Input.GetKeyDown("space"))
 					//	playerState = Player_State.PASSING;			
@@ -142,18 +143,15 @@ public class Player_Scripts : MonoBehaviour
 			break;
 
 			case Player_State.PASSING:
-				//Debug.Log("Passing ball");
 				if (typePlayer == TypePlayer.ATTACKER)
 				{
 					GameObject closetPlayer = null;
 					if (GameManager.instance.playerMode == GameManager.PlayerMode.ATTACKER)
 					{
-						//Debug.Log("Player is attacker");
 						closetPlayer = GetClosetPlayer(gameObject, GameManager.instance.playerTeam);
 					}
 					else
 					{
-						//Debug.Log("Player is defender");
 						closetPlayer = GetClosetPlayer(gameObject, GameManager.instance.enemyTeam);
 					}
 
@@ -169,7 +167,6 @@ public class Player_Scripts : MonoBehaviour
 
 				if (gameObject.transform.position == originPos)
 				{	
-					//animator.Play("Idle");
 					playerState = Player_State.INACTIVATED;
 				}
 			break;
@@ -177,9 +174,7 @@ public class Player_Scripts : MonoBehaviour
 			case Player_State.PICK_BALL:
 				if (typePlayer == TypePlayer.ATTACKER)
 				{
-					//animator.Play("FastRun");
 					animator.SetInteger("PlayerAnimationState", 2); // FastRun = 2
-					//if (ball.transform.parent != null)
 					if (GameManager.instance.ballScript.GetBallOwner() != null)
 					{
 						playerState = Player_State.MOVE_AUTOMATIC;
@@ -196,11 +191,9 @@ public class Player_Scripts : MonoBehaviour
 				animator.SetInteger("PlayerAnimationState", 0); // Idle
 				if (typePlayer == TypePlayer.DEFENDER)
 				{
-					//detectionCircle.SetActive(true);
 					if (CheckIfAttackerComeInside())
 					{
 						playerState = Player_State.CHASING_BALL;
-						//detectionCircle.SetActive(false);
 					}
 				}
 			break;
@@ -264,11 +257,34 @@ public class Player_Scripts : MonoBehaviour
 				// End match -> You win Match -> start new match.
 			break;
 
+			case Player_State.PENALTY:
+				HandleMovement();
+			break;
+
 			case Player_State.END_MATCH:
-				
-				// Play animation win!
+				//Don't do anything
 			break;
 		}
+	}
+
+	private void HandleMovement()
+	{
+		float moveSpeed = 1f;
+
+		Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+		characterController.Move(move * Time.deltaTime * moveSpeed);
+		transform.Rotate (new Vector3(0,Input.GetAxis("Horizontal") * 360f * Time.deltaTime,0));
+
+		if (move != Vector3.zero)
+		{
+			animator.SetInteger("PlayerAnimationState", 1);
+			gameObject.transform.forward = move;
+		}   
+		else
+		{
+			animator.SetInteger("PlayerAnimationState", 0);
+		}
+
 	}
 
 	private IEnumerator ReActivePlayer()
@@ -357,7 +373,6 @@ public class Player_Scripts : MonoBehaviour
 
 		Rigidbody rgBall = GameManager.instance.ball.gameObject.GetComponent<Rigidbody>();
 		rgBall.isKinematic = false;
-		//ball.transform.SetParent(null);
 		GameManager.instance.ballScript.SetBallOwner(null);
 
 		if (targetPlayer)
@@ -387,11 +402,7 @@ public class Player_Scripts : MonoBehaviour
 
 	private void MoveToTarget(Vector3 target, float speed)
 	{
-		// Vector3 direction = Vector3.Normalize(target - transform.position);
-		// Quaternion toRotation = Quaternion.LookRotation(direction, Vector3.up);
-		// transform.rotation = Quaternion.RotateTowards(transform.rotation, toRotation, 360f * Time.deltaTime);
 		RotationToTarget(target);
-
 		transform.position = Vector3.MoveTowards(transform.position, new Vector3(target.x, transform.position.y, target.z), speed);	
 	}
 
@@ -414,7 +425,18 @@ public class Player_Scripts : MonoBehaviour
 	{
 		if (typePlayer == TypePlayer.ATTACKER)
 		{
-			if (playerState != Player_State.INACTIVATED)
+			if (playerState == Player_State.PENALTY)
+			{
+				var otherTag = other.gameObject.tag;
+				if (otherTag == "Ball")
+				{
+					Rigidbody rbBall = GameManager.instance.ball.GetComponent<Rigidbody>();
+					rbBall.velocity = Vector3.zero;
+					rbBall.isKinematic = true;
+					GameManager.instance.ballScript.SetBallOwner(gameObject);
+				}
+			}
+			else if (playerState != Player_State.INACTIVATED)
 			{
 				var otherTag = other.gameObject.tag;
 				if (otherTag == "Ball")
