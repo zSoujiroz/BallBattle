@@ -2696,6 +2696,8 @@ MonoBehaviour:
     m_Bits: 256
   playerState: 0
   typePlayer: 1
+  barRedTexture: {fileID: 2800000, guid: 6dc4c3edcc3a1ee4387228ea7860827f, type: 3}
+  barBlueTexture: {fileID: 2800000, guid: afdb8644f2fa4b948b5e888d830ecf06, type: 3}
 --- !u!54 &-7677004011216783060
 Rigidbody:
   m_ObjectHideFlags: 0

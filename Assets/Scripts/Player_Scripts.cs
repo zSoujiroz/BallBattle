@@ -79,6 +79,13 @@ public class Player_Scripts : MonoBehaviour
 	private float movementX;
     private float movementY;
 
+	public Texture barRedTexture;
+	public Texture barBlueTexture;
+	private Texture barTexture;
+	private float barHpTimer;
+	private float barHpTimerCD;
+	private float barHp;
+
 	private  CharacterController characterController;
 
 
@@ -88,6 +95,7 @@ public class Player_Scripts : MonoBehaviour
 		originPos = gameObject.transform.position;
 		characterController = GetComponent<CharacterController>();
 		detectionLength = GameManager.instance.GetFieldLength() * def_DetectionRange;	
+		UpdateBarHp();
 	}
 
 	void Update()
@@ -111,6 +119,7 @@ public class Player_Scripts : MonoBehaviour
 				{
 					goalTarget = GameObject.FindGameObjectWithTag("GoalTeam1").transform.position;
 				}
+				barHpTimerCD = barHpTimer;	// reset countdown
 				playerState = Player_State.INACTIVATED;
 			break;
 
@@ -175,6 +184,7 @@ public class Player_Scripts : MonoBehaviour
 
 				if (gameObject.transform.position == originPos)
 				{	
+					barHpTimerCD = barHpTimer;	// reset countdown
 					playerState = Player_State.INACTIVATED;
 				}
 			break;
@@ -230,9 +240,7 @@ public class Player_Scripts : MonoBehaviour
 						isActivating = true;
 						StartCoroutine(ReActivePlayer());
 					}
-				}
-
-				
+				}	
 
 			break;
 
@@ -290,6 +298,30 @@ public class Player_Scripts : MonoBehaviour
 		}
 	}
 
+	private void UpdateBarHp()
+	{
+		if (typePlayer == TypePlayer.ATTACKER)
+		{
+			barHpTimer = att_ReactiveTime;
+		}
+		else
+		{
+			barHpTimer = def_ReactiveTime;
+		}
+
+		if (gameObject.tag == "PlayerTeam1")
+		{
+			barTexture = barBlueTexture;
+		}
+		else
+		{
+			barTexture = barRedTexture;
+		}
+
+		barHpTimerCD = barHpTimer;
+		barHp = 100f;
+
+	}
 	private void HandleMovement()
 	{
 		float moveSpeed = 1f;
@@ -395,6 +427,7 @@ public class Player_Scripts : MonoBehaviour
 		SoundManager.PlaySound(SoundManager.Sound.PlayerPass);
 		StopMoving();
 		this.playerState = Player_State.INACTIVATED;
+		barHpTimerCD = barHpTimer;	// reset countdown
 
 		Rigidbody rgBall = GameManager.instance.ball.gameObject.GetComponent<Rigidbody>();
 		rgBall.isKinematic = false;
@@ -518,6 +551,20 @@ public class Player_Scripts : MonoBehaviour
 			case Player_State.DEATH: 
 				animator.SetInteger("PlayerAnimationState", 6);
 			break;
+		}
+	}
+
+	void OnGUI() 
+	{
+		if (playerState == Player_State.INACTIVATED)
+		{
+			Vector3 posBar = Camera.main.WorldToScreenPoint( transform.position + new Vector3(0,1.0f,0) );
+			GUI.DrawTexture( new Rect(posBar.x-30, (Screen.height-posBar.y) , (int)barHp , 10 ), barTexture );
+			
+			barHpTimerCD -= Time.deltaTime;
+			barHp = barHpTimerCD/barHpTimer * 100;
+			if (barHp < 0)
+				barHp = 0;
 		}
 	}
 }

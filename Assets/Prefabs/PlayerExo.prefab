@@ -749,6 +749,8 @@ MonoBehaviour:
     m_Bits: 256
   playerState: 0
   typePlayer: 0
+  barRedTexture: {fileID: 2800000, guid: 6dc4c3edcc3a1ee4387228ea7860827f, type: 3}
+  barBlueTexture: {fileID: 2800000, guid: afdb8644f2fa4b948b5e888d830ecf06, type: 3}
 --- !u!54 &-4282337294032274121
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3471,7 +3473,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6039862538072224854}
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4653365760341454468}
