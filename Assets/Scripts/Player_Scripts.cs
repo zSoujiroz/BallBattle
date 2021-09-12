@@ -25,7 +25,7 @@ public class Player_Scripts : MonoBehaviour
 		GO_ORIGIN,
 		INACTIVATED,
 		ACTIVATED,
-		CATCH_GOAL,
+		// CATCH_GOAL,
 		DEATH,
 		PENALTY,
 		END_MATCH
@@ -88,6 +88,9 @@ public class Player_Scripts : MonoBehaviour
 
 	private  CharacterController characterController;
 
+	[SerializeField] ParticleSystem successParticles;
+	[SerializeField] ParticleSystem moveParticles;
+
 
 	void Start()
 	{
@@ -96,6 +99,8 @@ public class Player_Scripts : MonoBehaviour
 		characterController = GetComponent<CharacterController>();
 		detectionLength = GameManager.instance.GetFieldLength() * def_DetectionRange;	
 		UpdateBarHp();
+
+		
 	}
 
 	void Update()
@@ -108,6 +113,7 @@ public class Player_Scripts : MonoBehaviour
 		switch ( playerState ) 
 		{
 			case Player_State.INIT:
+				successParticles.Play();
 				SoundManager.PlaySound(SoundManager.Sound.PlayerInit , transform.position);
 				animator.SetInteger("PlayerAnimationState", 5); // Dancing
 				RotationToTarget(GameManager.instance.ball.transform.position);
@@ -130,6 +136,7 @@ public class Player_Scripts : MonoBehaviour
 					if (ballOwner != null)
 					{
 						animator.SetInteger("PlayerAnimationState", 2); // FastRun = 2
+						moveParticles.Play();
 						MoveToTarget(ballOwner.transform.position, def_NormalSpeed * Time.deltaTime);	
 					}
 				}
@@ -154,6 +161,7 @@ public class Player_Scripts : MonoBehaviour
 			case Player_State.MOVE_AUTOMATIC:
 				if (typePlayer == TypePlayer.ATTACKER)
 				{
+					moveParticles.Play();
 					animator.SetInteger("PlayerAnimationState", 2); // FastRun = 2
 					float step =  att_NormalSpeed * Time.deltaTime;
 					MoveToTarget(goalTarget, step);
@@ -179,8 +187,9 @@ public class Player_Scripts : MonoBehaviour
 			break;
 
 			case Player_State.GO_ORIGIN:
+				moveParticles.Play();
 				animator.SetInteger("PlayerAnimationState", 2); // FastRun = 2
-				MoveToTarget(originPos, def_NormalSpeed * Time.deltaTime);
+				MoveToTarget(originPos, def_ReturnSpeed * Time.deltaTime);
 
 				if (gameObject.transform.position == originPos)
 				{	
@@ -192,6 +201,7 @@ public class Player_Scripts : MonoBehaviour
 			case Player_State.PICK_BALL:
 				if (typePlayer == TypePlayer.ATTACKER)
 				{
+					moveParticles.Play();
 					animator.SetInteger("PlayerAnimationState", 2); // FastRun = 2
 					if (GameManager.instance.ballScript.GetBallOwner() != null)
 					{
@@ -272,27 +282,30 @@ public class Player_Scripts : MonoBehaviour
 				}
 			break;
 
-			case Player_State.CATCH_GOAL:
-				animator.SetInteger("PlayerAnimationState", 5); // Dancing
-				//Reset Ball
-				Rigidbody rgBall = GameManager.instance.ball.gameObject.GetComponent<Rigidbody>();
-				rgBall.isKinematic = false;
-				GameManager.instance.ball.transform.SetParent(null);
-				GameManager.instance.ball.transform.position = Vector3.zero;
+			// case Player_State.CATCH_GOAL:
+			// 	animator.SetInteger("PlayerAnimationState", 5); // Dancing
+			// 	//Reset Ball
+			// 	Rigidbody rgBall = GameManager.instance.ball.gameObject.GetComponent<Rigidbody>();
+			// 	rgBall.isKinematic = false;
+			// 	GameManager.instance.ball.transform.SetParent(null);
+			// 	GameManager.instance.ball.transform.position = Vector3.zero;
 
-				playerState	= Player_State.END_MATCH;
+			// 	playerState	= Player_State.END_MATCH;
+			// 	Debug.Log("Catgoal");
+			// 	//GameManager.instance.EndMatch(true);
+			// 	GameManager.instance.EndMatch(true);
+			// 	Debug.Log("Catgoal2");
 
-				//Debug.Log("Catch goal");
-				bool isWin = true; // win match
-				GameManager.instance.EndMatch(isWin);
-				// End match -> You win Match -> start new match.
-			break;
+			// 	StartCoroutine(EndMatch());
+			// 	// End match -> You win Match -> start new match.
+			// break;
 
 			case Player_State.PENALTY:
 				HandleMovement();
 			break;
 
 			case Player_State.END_MATCH:
+				animator.SetInteger("PlayerAnimationState", 5); // Dancing
 				//Don't do anything
 			break;
 		}
@@ -332,6 +345,7 @@ public class Player_Scripts : MonoBehaviour
 
 		if (move != Vector3.zero)
 		{
+			moveParticles.Play();
 			SoundManager.PlaySound(SoundManager.Sound.PlayerMove , transform.position);
 			animator.SetInteger("PlayerAnimationState", 1);
 			gameObject.transform.forward = move;
@@ -456,6 +470,13 @@ public class Player_Scripts : MonoBehaviour
 		rbBall.velocity = transform.forward * ballSpeed;
 		yield return new WaitForSeconds(2f);
 		rbBall.velocity = Vector3.zero;
+	}
+
+	private IEnumerator EndMatch()
+	{
+		yield return new WaitForSeconds(2f);
+		GameManager.instance.EndMatch(true);
+		Debug.Log("Endmaamtasdf");
 	}
 
 	private void MoveToTarget(Vector3 target, float speed)

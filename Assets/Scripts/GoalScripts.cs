@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class GoalScripts : MonoBehaviour
 {
+    [SerializeField] ParticleSystem successParticles;
     void OnTriggerEnter(Collider other)
     {
         var otherTag = other.gameObject.tag;
@@ -12,10 +13,12 @@ public class GoalScripts : MonoBehaviour
             GameObject ballOwner = GameManager.instance.ballScript.GetBallOwner();
             if (ballOwner != null)
             {
+                GameManager.instance.timerIsRunning = false; //Stop timer!
+                successParticles.Play();
                 Player_Scripts ballOwnerScripts = ballOwner.GetComponent<Player_Scripts>();
 
                 ballOwnerScripts.SetPlayerState(Player_Scripts.Player_State.END_MATCH);
-                GameManager.instance.EndMatch(true);
+                StartCoroutine(PlayerCatchGoal());
             }
             else
             {
@@ -23,43 +26,24 @@ public class GoalScripts : MonoBehaviour
             }
         }
 
-        if (gameObject.tag == "GoalTeam1")
+        if ((GameManager.instance.playerMode != GameManager.PlayerMode.PENALTY) && ((gameObject.tag == "GoalTeam1" && otherTag == "PlayerTeam2") || (gameObject.tag == "GoalTeam2" && otherTag == "PlayerTeam1")))
         {
-            if (otherTag == "PlayerTeam2")
+            Player_Scripts otherScripts = other.GetComponent<Player_Scripts>();
+            otherScripts.StopMoving();
+
+            if (otherScripts.GetPlayerState() == Player_Scripts.Player_State.HOLDING_BALL)
             {
-                Player_Scripts otherScripts = other.GetComponent<Player_Scripts>();
-                otherScripts.StopMoving();
-
-                if (otherScripts.GetPlayerState() == Player_Scripts.Player_State.HOLDING_BALL)
-                    otherScripts.SetPlayerState(Player_Scripts.Player_State.CATCH_GOAL);
-                else
-                {
-                    StartCoroutine(PlayDeathAnimation(otherScripts, other.gameObject.transform.position));
-                    GameManager.instance.enemyTeam.Remove(other.gameObject);
-                    other.gameObject.SetActive(false);
-                }
+                GameManager.instance.timerIsRunning = false; //Stop timer!
+                successParticles.Play();
+                otherScripts.SetPlayerState(Player_Scripts.Player_State.END_MATCH);
+                StartCoroutine(PlayerCatchGoal());
             }
-        }
-
-        if (gameObject.tag == "GoalTeam2")
-        {
-            if (otherTag == "PlayerTeam1")
+            else
             {
-                Player_Scripts otherScripts = other.GetComponent<Player_Scripts>();
-
-                if (otherScripts.GetPlayerState() == Player_Scripts.Player_State.HOLDING_BALL)
-                {
-                    otherScripts.StopMoving();
-                    otherScripts.SetPlayerState(Player_Scripts.Player_State.CATCH_GOAL);
-                }
-                else if (otherScripts.GetPlayerState() != Player_Scripts.Player_State.PENALTY)
-                {
-                    StartCoroutine(PlayDeathAnimation(otherScripts, other.gameObject.transform.position));
-                    GameManager.instance.playerTeam.Remove(other.gameObject);
-                    other.gameObject.SetActive(false);
-                }
+                StartCoroutine(PlayDeathAnimation(otherScripts, other.gameObject.transform.position));
+                GameManager.instance.enemyTeam.Remove(other.gameObject);
+                other.gameObject.SetActive(false);
             }
-
         }
     }
 
@@ -70,5 +54,9 @@ public class GoalScripts : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
 	}
 
-
+    private IEnumerator PlayerCatchGoal()
+	{
+        yield return new WaitForSeconds(3f);
+        GameManager.instance.EndMatch(true);
+	}
 }
