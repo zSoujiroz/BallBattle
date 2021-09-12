@@ -31,7 +31,10 @@ public class BallScript : MonoBehaviour
     public void ResetBallPosition()
     {
         if (transform.position.x < -fooballField[0]/2f || transform.position.x > fooballField[0]/2f || transform.position.z < -fooballField[1]/2f || transform.position.z > fooballField[1]/2f)
+        {
+            gameObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
             transform.position = Vector3.zero;
+        }            
         transform.position = new Vector3(transform.position.x, 0.2f, transform.position.z);
     }
 

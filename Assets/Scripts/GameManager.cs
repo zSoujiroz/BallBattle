@@ -349,6 +349,7 @@ public class GameManager : MonoBehaviour
 
     public void EndMatch(bool isWin)
     {
+        timerIsRunning = false;
         if (isWin)
         {
             if (playerMode == PlayerMode.PENALTY)

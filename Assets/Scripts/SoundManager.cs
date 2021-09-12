@@ -6,6 +6,7 @@ public static class SoundManager
 {
     public enum Sound
     {
+        PlayerInit,
         PlayerMove,
         PlayerPass,
         PlayerKick,
@@ -14,6 +15,8 @@ public static class SoundManager
     }
 
     private static Dictionary<Sound, float> soundTimeDictionary;
+    private static GameObject oneShotGameObject;
+    private static AudioSource oneShotAudioSource;
 
     public static void Initialize()
     {
@@ -25,9 +28,12 @@ public static class SoundManager
     {
         if (CanPlaySound(sound))
         {
-            GameObject soundGameObject = new GameObject("Sound");
-            AudioSource audioSource = soundGameObject.AddComponent<AudioSource>();
-            audioSource.PlayOneShot(GetAudioClip(sound));
+            if (oneShotGameObject == null)
+            {
+                oneShotGameObject = new GameObject("One Shot Sound");
+                oneShotAudioSource = oneShotGameObject.AddComponent<AudioSource>();
+            }            
+            oneShotAudioSource.PlayOneShot(GetAudioClip(sound));
         }
     }
 
@@ -44,6 +50,9 @@ public static class SoundManager
             audioSource.rolloffMode = AudioRolloffMode.Linear;
             audioSource.dopplerLevel = 0f;            
             audioSource.Play(0);
+
+            Object.Destroy(soundGameObject, audioSource.clip.length);
+
         }
     }
 
@@ -58,6 +67,11 @@ public static class SoundManager
 
     private static bool CanPlaySound(Sound sound)
     {
+        if ( !GameManager.instance.timerIsRunning)
+        {
+            return false;
+        }
+        
         switch (sound)
         {
         case Sound.PlayerMove:

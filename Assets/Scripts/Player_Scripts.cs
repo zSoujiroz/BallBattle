@@ -100,6 +100,7 @@ public class Player_Scripts : MonoBehaviour
 		switch ( playerState ) 
 		{
 			case Player_State.INIT:
+				SoundManager.PlaySound(SoundManager.Sound.PlayerInit , transform.position);
 				animator.SetInteger("PlayerAnimationState", 5); // Dancing
 				RotationToTarget(GameManager.instance.ball.transform.position);
 				if (GameManager.instance.playerMode == GameManager.PlayerMode.ATTACKER)
