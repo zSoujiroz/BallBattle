@@ -129,10 +129,16 @@ public class Player_Scripts : MonoBehaviour
 			case Player_State.HOLDING_BALL:
 				if (typePlayer == TypePlayer.ATTACKER)
 				{
-					animator.SetInteger("PlayerAnimationState", 1); // SlowRun = 2
-					//if (Input.GetKeyDown("space"))
-					//	playerState = Player_State.PASSING;			
-					MoveToTarget(goalTarget, att_CarryingSpeed * Time.deltaTime);
+					if (GameManager.instance.IsRushTime())
+					{
+						animator.SetInteger("PlayerAnimationState", 2); // FastRun = 2
+						MoveToTarget(goalTarget, att_NormalSpeed * Time.deltaTime);
+					}
+					else
+					{
+						animator.SetInteger("PlayerAnimationState", 1); // SlowRun = 2
+						MoveToTarget(goalTarget, att_CarryingSpeed * Time.deltaTime);
+					}
 				}
 			break;
 
@@ -204,14 +210,29 @@ public class Player_Scripts : MonoBehaviour
 				animator.SetInteger("PlayerAnimationState", 0); // Idle
 				if (typePlayer == TypePlayer.DEFENDER)
 				{
-					//detectionCircle.SetActive(false);
+					if (GameManager.instance.IsRushTime())
+					{
+						playerState = Player_State.ACTIVATED;
+					}
+					else
+					{
+						if (!isActivating)
+						{
+							isActivating = true;
+							StartCoroutine(ReActivePlayer());
+						}
+					}
 				}	
-
-				if (!isActivating)
+				else
 				{
-					isActivating = true;
-					StartCoroutine(ReActivePlayer());
+					if (!isActivating)
+					{
+						isActivating = true;
+						StartCoroutine(ReActivePlayer());
+					}
 				}
+
+				
 
 			break;
 

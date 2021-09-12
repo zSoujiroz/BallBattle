@@ -157,8 +157,11 @@ public class GameManager : MonoBehaviour
             if ( timeRemaining > 0)
             {
                 timeRemaining -= Time.deltaTime;
-                if (timeRemaining < timeRush)
+                if (timeRemaining < timeRush && isRushTime == false)
+                {
                     isRushTime = true;
+                    UpdateEnergyRegeneration();
+                }
 
                 matchTimer.text = (int)timeRemaining + "s";
                 GeneratePlayerEnergy();
@@ -278,6 +281,13 @@ public class GameManager : MonoBehaviour
         }
 
         MatchSetup();
+    }
+
+    private void UpdateEnergyRegeneration()
+    {
+        // shotter 30% time to regeration energy
+        playerEnergyRegeneration -= playerEnergyRegeneration * 0.3f;
+        enemyEnergyRegeneration -= enemyEnergyRegeneration * 0.3f;
     }
 
     private void GeneratePlayerEnergy()
@@ -620,6 +630,11 @@ public class GameManager : MonoBehaviour
     public float GetEnemySpawnRate()
     {
         return enemySpawnRate;
+    }
+
+    public bool IsRushTime()
+    {
+        return isRushTime;
     }
 
 }
