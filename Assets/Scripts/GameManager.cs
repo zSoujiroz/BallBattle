@@ -103,9 +103,13 @@ public class GameManager : MonoBehaviour
     public GameObject ui_GameModeInfo;
     public TextMeshProUGUI ui_PlayName;
     public TextMeshProUGUI ui_EnemyName;
-    public TextMeshProUGUI ui_PlayScoreText;
-    public TextMeshProUGUI ui_EnemyScoreText;
-    private TextMeshProUGUI ui_MatchText;
+
+    //public TextMeshProUGUI ui_PlayScoreText;
+    //public TextMeshProUGUI ui_EnemyScoreText;
+    public TextMeshProUGUI ui_GameOverText;
+
+    public Button ui_HomeButton;
+    public Button ui_StartMatchButton;
 
     public GameObject ui_EndGame;
     public TextMeshProUGUI ui_PlayScoreFinalText;
@@ -321,8 +325,6 @@ public class GameManager : MonoBehaviour
         UpdateEnergySlider();
         UpdatePlayerName();
 
-        //ResetPlayer();
-
         Time.timeScale = 1f;
         isSetup = false;
     }
@@ -356,26 +358,29 @@ public class GameManager : MonoBehaviour
             else
                 enemyScore +=1;
         }
+
+        bool isGameOver = CheckEndGame();
+        DisplayEndGame(isGameOver);
         
-        if (CheckEndGame() == false)
-        {
-            ResetPlayer();
-            DisplayEndMatch();
-            StartNewMatch();
-        }
-        else
-        {
-            EndGame();
-        }
+        // if (CheckEndGame() == false)
+        // {
+        //     DisplayEndMatch();
+        //     StartNewMatch();
+        // }
+        // else
+        // {
+        //     EndGame();
+        // }
     }
 
-    public void EndGame()
-    {
-        DisplayEndGame();
-    }
+    // public void EndGame()
+    // {
+    //     DisplayEndGame();
+    // }
 
     public bool CheckEndGame()
     {
+        ResetPlayer();
         if (gameMatch == 5)
         {
             if (playerScore == enemyScore)
@@ -465,33 +470,62 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void DisplayEndGame()
+    void DisplayEndGame(bool isGameOver)
     {
+        if (isGameOver)
+        {
+            Debug.Log("Endgame");
+            ui_HomeButton.gameObject.SetActive(true);
+            ui_StartMatchButton.gameObject.SetActive(false);
+            ui_GameOverText.text = "Game Over!";
+        }
+        else
+        {
+            ui_HomeButton.gameObject.SetActive(false);
+            ui_StartMatchButton.gameObject.SetActive(true);
+            if (gameMatch == 5)
+            {
+                ui_GameOverText.text = "Finish Match : " + gameMatch + " Draw Result";
+            }
+            else
+            {
+                ui_GameOverText.text = "Finish Match : " + gameMatch;
+            }
+            Debug.Log("Start New match");
+        }
         ui_PlayScoreFinalText.text = playerScore + "";
         ui_EnemyScoreFinalText.text = enemyScore + "";
         ui_EndGame.SetActive(true);
     }
 
-    void DisplayEndMatch()
-    {
-        ui_PlayScoreText.text = playerScore + "";
-        ui_EnemyScoreText.text = enemyScore + "";
+    // void DisplayEndMatch()
+    // {
+    //     Debug.Log("endmat");
+    //     ui_PlayScoreText.text = playerScore + "";
+    //     ui_EnemyScoreText.text = enemyScore + "";
 
-        ui_LoadMatch.SetActive(true);
-        Invoke("HideEndMatch", matchEndDelay);
-    }
+    //     ui_LoadMatch.SetActive(true);
+    //     Invoke("HideEndMatch", matchEndDelay);
+    // }
 
-    void HideEndMatch()
-    {
-        ui_LoadMatch.SetActive(false);
-    }
+    // void HideEndMatch()
+    // {
+    //     ui_LoadMatch.SetActive(false);
+    // }
 
     void DisplayLoadMatch()
     {
         if (ui_LoadMatch)
         {
             TextMeshProUGUI matchText = GetChildWithName(ui_LoadMatch, "LoadMatchText").GetComponent<TextMeshProUGUI>(); 
-            matchText.text = "Match : " + gameMatch;
+            if (gameMatch == 6)
+            {
+                matchText.text = "Penalty Match";
+            }
+            else
+            {
+                matchText.text = "Match : " + gameMatch;
+            }
 
             ui_LoadMatch.SetActive(true);
             Invoke("HideLoadMatch", matchStartDelay);

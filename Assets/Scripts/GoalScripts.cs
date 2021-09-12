@@ -19,7 +19,7 @@ public class GoalScripts : MonoBehaviour
             }
             else
             {
-                other.gameObject.transform.position += Vector3.zero;
+                other.gameObject.transform.position = Vector3.zero;
             }
         }
 
@@ -34,6 +34,7 @@ public class GoalScripts : MonoBehaviour
                     otherScripts.SetPlayerState(Player_Scripts.Player_State.CATCH_GOAL);
                 else
                 {
+                    StartCoroutine(PlayDeathAnimation(otherScripts));
                     GameManager.instance.enemyTeam.Remove(other.gameObject);
                     other.gameObject.SetActive(false);
                 }
@@ -53,6 +54,7 @@ public class GoalScripts : MonoBehaviour
                 }
                 else if (otherScripts.GetPlayerState() != Player_Scripts.Player_State.PENALTY)
                 {
+                    StartCoroutine(PlayDeathAnimation(otherScripts));
                     GameManager.instance.playerTeam.Remove(other.gameObject);
                     other.gameObject.SetActive(false);
                 }
@@ -60,4 +62,12 @@ public class GoalScripts : MonoBehaviour
 
         }
     }
+
+    private IEnumerator PlayDeathAnimation(Player_Scripts scripts)
+	{
+        scripts.PlayAnimation(Player_Scripts.Player_State.DEATH);
+        yield return new WaitForSeconds(0.5f);
+	}
+
+
 }

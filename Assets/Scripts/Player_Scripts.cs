@@ -26,6 +26,7 @@ public class Player_Scripts : MonoBehaviour
 		INACTIVATED,
 		ACTIVATED,
 		CATCH_GOAL,
+		DEATH,
 		PENALTY,
 		END_MATCH
 	};
@@ -112,12 +113,12 @@ public class Player_Scripts : MonoBehaviour
 			break;
 
 			case Player_State.CHASING_BALL:
-				animator.SetInteger("PlayerAnimationState", 2); // FastRun = 2
 				if (typePlayer == TypePlayer.DEFENDER)
 				{
 					GameObject ballOwner = GameManager.instance.ballScript.GetBallOwner();
 					if (ballOwner != null)
 					{
+						animator.SetInteger("PlayerAnimationState", 2); // FastRun = 2
 						MoveToTarget(ballOwner.transform.position, def_NormalSpeed * Time.deltaTime);	
 					}
 				}
@@ -484,4 +485,14 @@ public class Player_Scripts : MonoBehaviour
 		//Debug.Log("check length = " + detectionLength);
 		return null;
 	}	
+
+	public void PlayAnimation(Player_State state)
+	{
+		switch (state)
+		{
+			case Player_State.DEATH: 
+				animator.SetInteger("PlayerAnimationState", 6);
+			break;
+		}
+	}
 }
