@@ -5649,7 +5649,6 @@ MonoBehaviour:
   mazeRows: 10
   mazeColumns: 20
   wall: {fileID: 101274, guid: 63d85ce985b7aae4b983008075120fac, type: 3}
-  mazeHolder: {fileID: 0}
 --- !u!1 &1153388852
 GameObject:
   m_ObjectHideFlags: 0
@@ -8913,6 +8912,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5548297685715715440, guid: 87b28fab7db6f764b8fcef521f19d403, type: 3}
+      propertyPath: playerToPool
+      value: 
+      objectReference: {fileID: 8825515968836517336, guid: fce38fc1afbd2f249a10c5e1d74c8e79, type: 3}
     - target: {fileID: 5548297685715715441, guid: 87b28fab7db6f764b8fcef521f19d403, type: 3}
       propertyPath: m_RootOrder
       value: 5
