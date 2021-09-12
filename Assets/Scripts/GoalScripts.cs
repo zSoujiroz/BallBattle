@@ -65,6 +65,7 @@ public class GoalScripts : MonoBehaviour
 
     private IEnumerator PlayDeathAnimation(Player_Scripts scripts)
 	{
+        SoundManager.PlaySound(SoundManager.Sound.PlayerDie);
         scripts.PlayAnimation(Player_Scripts.Player_State.DEATH);
         yield return new WaitForSeconds(0.5f);
 	}

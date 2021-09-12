@@ -135,6 +135,7 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         InitBallBattleField();
+        SoundManager.Initialize();
     }
 
     void Start()
@@ -145,6 +146,8 @@ public class GameManager : MonoBehaviour
 
         PlayerPool.SharedInstance.InitPlayer(playerMode == PlayerMode.ATTACKER);
         PlayerPool.SharedInstance.InitEnemy(enemyMode == PlayerMode.ATTACKER);
+
+        SoundManager.PlaySoundBG(SoundManager.Sound.Background);
     }
 
     void Update()

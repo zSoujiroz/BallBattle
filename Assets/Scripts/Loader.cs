@@ -6,12 +6,10 @@ public class Loader : MonoBehaviour
 {
     public GameObject gameManager;
     public GameObject gameOptions;
+    public GameObject soundManager;	
 
     void Awake()
     {
-        //if (GameManager.instance == null)
-          //  Instantiate(gameManager);
-        //if (GameOptions.sharedinstance == null)
-        //    Instantiate(gameOptions);
+
     }
 }

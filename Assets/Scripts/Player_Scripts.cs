@@ -87,15 +87,16 @@ public class Player_Scripts : MonoBehaviour
 		animator = GetComponent<Animator>();
 		originPos = gameObject.transform.position;
 		characterController = GetComponent<CharacterController>();
-		//ball = GameObject.FindGameObjectWithTag("Ball");
-		//ballScript = ball.GetComponent<BallScript>();
-		//detectionCircle = GameManager.instance.GetChildWithName(gameObject, "detectionCircle");
-		detectionLength = GameManager.instance.GetFieldLength() * def_DetectionRange;
-		//playerState = Player_State.INIT;		
+		detectionLength = GameManager.instance.GetFieldLength() * def_DetectionRange;	
 	}
 
 	void Update()
 	{
+		//if (Input.GetKeyDown("space"))
+			//SoundManager.PlaySound();
+			//SoundManager.PlaySound(SoundManager.Sound.PlayerMove);
+
+
 		switch ( playerState ) 
 		{
 			case Player_State.INIT:
@@ -277,6 +278,7 @@ public class Player_Scripts : MonoBehaviour
 
 		if (move != Vector3.zero)
 		{
+			SoundManager.PlaySound(SoundManager.Sound.PlayerMove , transform.position);
 			animator.SetInteger("PlayerAnimationState", 1);
 			gameObject.transform.forward = move;
 		}   
@@ -368,6 +370,7 @@ public class Player_Scripts : MonoBehaviour
 
 	private void PassBallToPlayer(GameObject targetPlayer)
     {
+		SoundManager.PlaySound(SoundManager.Sound.PlayerPass);
 		StopMoving();
 		this.playerState = Player_State.INACTIVATED;
 
