@@ -19,8 +19,8 @@ public class SpawnPlayer : MonoBehaviour
     {
         minEnemyField = GameManager.instance.GetMinEnemyField();
         maxEnemyField = GameManager.instance.GetMaxEnemyField();
-        Debug.Log("minEnemyField = " +  minEnemyField );
-        Debug.Log("maxEnemyField = " +  maxEnemyField );
+        //Debug.Log("minEnemyField = " +  minEnemyField );
+        //Debug.Log("maxEnemyField = " +  maxEnemyField );
     }
 
     void FixedUpdate()
@@ -34,8 +34,8 @@ public class SpawnPlayer : MonoBehaviour
                     myRay = Camera.main.ScreenPointToRay(Input.mousePosition);
                     if(Physics.Raycast(myRay, out hit, Mathf.Infinity, playerLayer))
                     {
-                        Debug.DrawLine (myRay.origin, hit.point);
-                        Debug.Log("Left hit " + hit.point);
+                        //Debug.DrawLine (myRay.origin, hit.point);
+                        //Debug.Log("Left hit " + hit.point);
                         SpawnPlayerObj(hit.point);
                     }
                 }
@@ -47,8 +47,8 @@ public class SpawnPlayer : MonoBehaviour
                         myRay = Camera.main.ScreenPointToRay(Input.mousePosition);
                         if(Physics.Raycast(myRay, out hit, Mathf.Infinity, enemyLayer))
                         {
-                            Debug.DrawLine (myRay.origin, hit.point);
-                            Debug.Log("Right hit " + hit.point);
+                            //Debug.DrawLine (myRay.origin, hit.point);
+                            //Debug.Log("Right hit " + hit.point);
                             SpawnEnemyObj(hit.point);
                         }
                     }
@@ -112,18 +112,18 @@ public class SpawnPlayer : MonoBehaviour
                     obScripts.SetPlayerState(Player_Scripts.Player_State.INIT);
                     ob.SetActive(true);
                     GameManager.instance.playerTeam.Add(ob);
-                    Debug.Log("playerTeam count = " + GameManager.instance.playerTeam.Count);
+                    //Debug.Log("playerTeam count = " + GameManager.instance.playerTeam.Count);
                 }
-                else
-                {
-                    Debug.Log("spawn player fails");
-                }
+                // else
+                // {
+                //     Debug.Log("spawn player fails");
+                // }
                 
             }
-            else
-            {
-                Debug.Log("Cant' spawn");
-            }
+            // else
+            // {
+            //     Debug.Log("Cant' spawn");
+            // }
         }
     }
 
@@ -153,17 +153,17 @@ public class SpawnPlayer : MonoBehaviour
                     ob.SetActive(true);
 
                     GameManager.instance.enemyTeam.Add(ob);
-                    Debug.Log("enemyTeam count = " + GameManager.instance.enemyTeam.Count);
+                    //Debug.Log("enemyTeam count = " + GameManager.instance.enemyTeam.Count);
                 }
-                else
-                {
-                    Debug.Log("spawn enemy fails");
-                }
+                // else
+                // {
+                //     Debug.Log("spawn enemy fails");
+                // }
             }
-            else
-            {
-                Debug.Log("Cant' spawn");
-            }
+            // else
+            // {
+            //     Debug.Log("Cant' spawn");
+            // }
         }
     }
 }

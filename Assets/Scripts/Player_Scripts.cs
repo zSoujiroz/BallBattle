@@ -416,7 +416,7 @@ public class Player_Scripts : MonoBehaviour
 		float closetDistanceSqr = Mathf.Infinity;
 		Vector3 currentPos = fromThis.transform.position;
 
-		Debug.Log("allOtherTeamPlayer " + allOtherTeamPlayer.Count);
+		//Debug.Log("allOtherTeamPlayer " + allOtherTeamPlayer.Count);
 
 		foreach (GameObject go in allOtherTeamPlayer)
 		{
@@ -476,7 +476,6 @@ public class Player_Scripts : MonoBehaviour
 	{
 		yield return new WaitForSeconds(2f);
 		GameManager.instance.EndMatch(true);
-		Debug.Log("Endmaamtasdf");
 	}
 
 	private void MoveToTarget(Vector3 target, float speed)

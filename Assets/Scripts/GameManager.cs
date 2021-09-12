@@ -488,7 +488,7 @@ public class GameManager : MonoBehaviour
     {
         if (isGameOver)
         {
-            Debug.Log("Endgame");
+            //Debug.Log("Endgame");
             ui_HomeButton.gameObject.SetActive(true);
             ui_StartMatchButton.gameObject.SetActive(false);
             ui_GameOverText.text = "Game Over!";
@@ -505,7 +505,7 @@ public class GameManager : MonoBehaviour
             {
                 ui_GameOverText.text = "Finish Match : " + gameMatch;
             }
-            Debug.Log("Start New match");
+            //Debug.Log("Start New match");
         }
         ui_PlayScoreFinalText.text = playerScore + "";
         ui_EnemyScoreFinalText.text = enemyScore + "";
@@ -571,8 +571,8 @@ public class GameManager : MonoBehaviour
 
     public float[] GetFootBallField()
     {
-        Debug.Log("with = " + foobalField[0]);
-        Debug.Log("length = " + foobalField[1]);
+        //Debug.Log("with = " + foobalField[0]);
+        //Debug.Log("length = " + foobalField[1]);
         return foobalField;
     }
 
@@ -587,8 +587,8 @@ public class GameManager : MonoBehaviour
             minEnemyField = Vector3.Min(posLB ,posRT);
             maxEnemyField = Vector3.Max(posLB ,posRT);
 
-            Debug.Log("minField " + minEnemyField);
-            Debug.Log("maxField " + maxEnemyField);
+            //Debug.Log("minField " + minEnemyField);
+            //Debug.Log("maxField " + maxEnemyField);
         }
     }
 

@@ -71,7 +71,7 @@ public static class SoundManager
         {
             return false;
         }
-        
+
         switch (sound)
         {
         case Sound.PlayerMove:
@@ -109,7 +109,7 @@ public static class SoundManager
             }
         }
 
-        Debug.LogError("Sound" + sound + "not found!");
+        //Debug.LogError("Sound" + sound + "not found!");
         return null;
     }
 }
