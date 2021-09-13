@@ -15,12 +15,19 @@ public class SpawnPlayer : MonoBehaviour
     private Vector3 minEnemyField;
     private Vector3 maxEnemyField;
 
+    private float spawnPlayerTimer = 0f;
+    private float spawnEnemyTimer = 0f;
+
     void Start()
     {
         minEnemyField = GameManager.instance.GetMinEnemyField();
         maxEnemyField = GameManager.instance.GetMaxEnemyField();
-        //Debug.Log("minEnemyField = " +  minEnemyField );
-        //Debug.Log("maxEnemyField = " +  maxEnemyField );
+    }
+
+    void Update()
+    {
+        spawnPlayerTimer += Time.deltaTime;
+        spawnEnemyTimer += Time.deltaTime;
     }
 
     void FixedUpdate()
@@ -29,33 +36,33 @@ public class SpawnPlayer : MonoBehaviour
         {
             if (GameManager.instance.GetCurrentMatch() < 6) // normal match
             {
-                if(Input.GetMouseButtonDown(0))
+                if(Input.GetMouseButtonDown(0) && CanSpawnPlayer())
                 {
                     myRay = Camera.main.ScreenPointToRay(Input.mousePosition);
                     if(Physics.Raycast(myRay, out hit, Mathf.Infinity, playerLayer))
                     {
-                        //Debug.DrawLine (myRay.origin, hit.point);
-                        //Debug.Log("Left hit " + hit.point);
                         SpawnPlayerObj(hit.point);
                     }
                 }
 
                 if (GameManager.instance.GetGameMode() == GameManager.GameMode.Player_Player)
                 {
-                    if(Input.GetMouseButtonDown(1))
+                #if UNITY_IOS || UNITY_ANDROID || UNITY_WP8 || UNITY_IPHONE
+                    if(Input.GetMouseButtonDown(0) && CanSpawnEnemy())
+                #else
+                    if(Input.GetMouseButtonDown(1) && CanSpawnEnemy())
+                #endif
                     {
                         myRay = Camera.main.ScreenPointToRay(Input.mousePosition);
                         if(Physics.Raycast(myRay, out hit, Mathf.Infinity, enemyLayer))
                         {
-                            //Debug.DrawLine (myRay.origin, hit.point);
-                            //Debug.Log("Right hit " + hit.point);
                             SpawnEnemyObj(hit.point);
                         }
                     }
                 }
                 else
                 {
-                    if (GameManager.instance.playerEnergy >= GameManager.instance.playerSpawnCost)
+                    if (GameManager.instance.playerEnergy >= GameManager.instance.playerSpawnCost && CanSpawnEnemy())
                     {
                         SpawnEnemyObj(GenerateEnemyPosition());
                     }
@@ -75,12 +82,34 @@ public class SpawnPlayer : MonoBehaviour
 
     private bool CanSpawnPlayer()
     {
+        if (spawnPlayerTimer > GameManager.instance.timeSpawnPlayerDelay)
+        {
+            spawnPlayerTimer = 0f;
+            return true;
+        }
+        else
+            return false;
+    }
+
+    private bool CanSpawnEnemy()
+    {
+        if (spawnEnemyTimer > GameManager.instance.timeSpawnEnemyDelay)
+        {
+            spawnEnemyTimer = 0f;
+            return true;
+        }
+        else
+            return false;
+    }
+
+    private bool SpawnPlayerSuccess()
+    {
         if (Random.Range(0f, 1f) < GameManager.instance.GetPlayerSpawnRate())
             return true;
         return false;
     }
 
-    private bool CanSpawnEnemy()
+    private bool SpawnEnemySuccess()
     {
         if (Random.Range(0f, 1f) < GameManager.instance.GetEnemySpawnRate())
             return true;
@@ -97,7 +126,7 @@ public class SpawnPlayer : MonoBehaviour
                 GameManager.instance.playerEnergy -= GameManager.instance.playerSpawnCost;
                 GameManager.instance.UpdateEnergySlider();
 
-                if (CanSpawnPlayer())
+                if (SpawnPlayerSuccess())
                 {
                     ob.transform.position = new Vector3(pos.x, ob.transform.position.y, pos.z);
                     Player_Scripts obScripts = ob.GetComponent<Player_Scripts>();
@@ -137,7 +166,7 @@ public class SpawnPlayer : MonoBehaviour
                 GameManager.instance.enemyEnergy -= GameManager.instance.enemySpawnCost;
                 GameManager.instance.UpdateEnergySlider();
 
-                if (CanSpawnEnemy())
+                if (SpawnEnemySuccess())
                 {
                     ob.transform.position = new Vector3(pos.x, ob.transform.position.y, pos.z);
                     Player_Scripts obScripts = ob.GetComponent<Player_Scripts>();

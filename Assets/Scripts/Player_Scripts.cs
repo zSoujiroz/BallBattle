@@ -42,9 +42,6 @@ public class Player_Scripts : MonoBehaviour
 		PickBall
 	}
 
-
-	private float att_SpawnTime = 0.5f;
-	private float def_SpawnTime = 0.5f;
 	private float att_ReactiveTime = 2.5f;
 	private float def_ReactiveTime = 4f;
 	private float att_NormalSpeed = 1.5f;
@@ -54,14 +51,6 @@ public class Player_Scripts : MonoBehaviour
 	private float passForce = 100f;
 	private float def_ReturnSpeed = 2f;
 	private float def_DetectionRange = 0.35f;
-
-	//[SerializeField]
-	//public GameObject detectionCircle;
-
-    //private GameObject ball;
-	//private BallScript ballScript;
-
-	private float rotationSpeed = 1f;
 
 	private Animator animator;
 
@@ -76,9 +65,6 @@ public class Player_Scripts : MonoBehaviour
 
 	private bool isActivating = false;
 
-	private float movementX;
-    private float movementY;
-
 	public Texture barRedTexture;
 	public Texture barBlueTexture;
 	private Texture barTexture;
@@ -90,6 +76,8 @@ public class Player_Scripts : MonoBehaviour
 
 	[SerializeField] ParticleSystem successParticles;
 	[SerializeField] ParticleSystem moveParticles;
+
+	private Vector2 touchOrigin = -Vector2.one;
 
 
 	void Start()
@@ -282,24 +270,6 @@ public class Player_Scripts : MonoBehaviour
 				}
 			break;
 
-			// case Player_State.CATCH_GOAL:
-			// 	animator.SetInteger("PlayerAnimationState", 5); // Dancing
-			// 	//Reset Ball
-			// 	Rigidbody rgBall = GameManager.instance.ball.gameObject.GetComponent<Rigidbody>();
-			// 	rgBall.isKinematic = false;
-			// 	GameManager.instance.ball.transform.SetParent(null);
-			// 	GameManager.instance.ball.transform.position = Vector3.zero;
-
-			// 	playerState	= Player_State.END_MATCH;
-			// 	Debug.Log("Catgoal");
-			// 	//GameManager.instance.EndMatch(true);
-			// 	GameManager.instance.EndMatch(true);
-			// 	Debug.Log("Catgoal2");
-
-			// 	StartCoroutine(EndMatch());
-			// 	// End match -> You win Match -> start new match.
-			// break;
-
 			case Player_State.PENALTY:
 				HandleMovement();
 			break;
@@ -338,10 +308,44 @@ public class Player_Scripts : MonoBehaviour
 	private void HandleMovement()
 	{
 		float moveSpeed = 1f;
+		float horizontal = 0f;
+        float vertical = 0f;
 
-		Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+	#if UNITY_STANDALONE || UNITY_WEBPLAYER
+		horizontal = Input.GetAxis("Horizontal");
+		vertical = Input.GetAxis("Vertical");
+
+	#elif UNITY_IOS || UNITY_ANDROID || UNITY_WP8 || UNITY_IPHONE
+		
+		if (Input.touchCount > 0)
+		{
+			Touch myTouch = Input.touches[0];
+			if (myTouch.phase == TouchPhase.Began)
+			{
+				touchOrigin = myTouch.position;
+			}
+			else if (myTouch.phase == TouchPhase.Ended)
+			{
+				Vector2 touchEnd = myTouch.position;
+				float x = touchEnd.x - touchOrigin.x;
+				float y = touchEnd.y - touchOrigin.y;
+
+				if (Mathf.Abs(x) > Mathf.Abs(y))
+				{
+					horizontal = x > 0 ? 50f : -50f;
+				}
+				else
+				{
+					vertical = y > 0 ? 50f : -50f;
+				}
+			}
+		}
+	#endif
+
+		Vector3 move = new Vector3(horizontal, 0, vertical);
+
 		characterController.Move(move * Time.deltaTime * moveSpeed);
-		transform.Rotate (new Vector3(0,Input.GetAxis("Horizontal") * 360f * Time.deltaTime,0));
+		transform.Rotate (new Vector3(0, horizontal * 360f * Time.deltaTime,0));
 
 		if (move != Vector3.zero)
 		{
@@ -576,7 +580,7 @@ public class Player_Scripts : MonoBehaviour
 
 	void OnGUI() 
 	{
-		if (playerState == Player_State.INACTIVATED)
+		if (playerState == Player_State.INACTIVATED && !GameManager.instance.IsPauseGame())
 		{
 			Vector3 posBar = Camera.main.WorldToScreenPoint( transform.position + new Vector3(0,1.0f,0) );
 			GUI.DrawTexture( new Rect(posBar.x-30, (Screen.height-posBar.y) , (int)barHp , 10 ), barTexture );
