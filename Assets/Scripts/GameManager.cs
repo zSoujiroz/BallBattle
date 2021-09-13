@@ -26,7 +26,6 @@ public class GameManager : MonoBehaviour
     public Slider playerEnergySlider;
     public Slider enemyEnergySlider;
 
-    private int matchPerGame = 5;
     private float timeLimit = 140f;
     private float timeRush = 15f;
     private int maxEnergy = 6;
@@ -37,6 +36,8 @@ public class GameManager : MonoBehaviour
 	private float def_SpawnRate = 0.6f;
 	private float att_EnergyCost = 2f;
 	private float def_EnergyCost = 3f;
+    private float att_SpawnTime = 0.5f;
+	private float def_SpawnTime = 0.5f;
 
     private bool arMode = false;
     private GameMode gameMode;
@@ -74,6 +75,9 @@ public class GameManager : MonoBehaviour
     private float lastPlayerFillEnergy;
     private float lastEnemyFillEnergy;
 
+    [HideInInspector]
+    public float timeSpawnPlayerDelay, timeSpawnEnemyDelay;
+
     private float fieldLength;
     private float[] foobalField;
 
@@ -88,6 +92,8 @@ public class GameManager : MonoBehaviour
     private int enemyScore;
     
     private int gameMatch;
+
+    private bool isPause;
 
     public GameObject ball;
     [HideInInspector]
@@ -114,8 +120,6 @@ public class GameManager : MonoBehaviour
     public GameObject ui_EndGame;
     public TextMeshProUGUI ui_PlayScoreFinalText;
     public TextMeshProUGUI ui_EnemyScoreFinalText;
-
-
     
     private MazeController mazeController;
     
@@ -254,11 +258,13 @@ public class GameManager : MonoBehaviour
                 playerSpawnCost = att_EnergyCost;
                 playerEnergyRegeneration = att_EnergyRegeneration;
                 playerSpawnRate = att_SpawnRate;
+                timeSpawnPlayerDelay = att_SpawnTime;
 
                 enemyMode = PlayerMode.DEFENDER;
                 enemySpawnCost = def_EnergyCost;
                 enemyEnergyRegeneration = def_EnergyRegeneration;
                 enemySpawnRate = def_SpawnRate;
+                timeSpawnEnemyDelay = def_SpawnTime;
             }
             else
             {
@@ -266,11 +272,13 @@ public class GameManager : MonoBehaviour
                 playerSpawnCost = def_EnergyCost;
                 playerEnergyRegeneration = def_EnergyRegeneration;
                 playerSpawnRate = def_SpawnRate;
+                timeSpawnPlayerDelay = def_SpawnTime;
 
                 enemyMode = PlayerMode.ATTACKER;
                 enemySpawnCost = att_EnergyCost;
                 enemyEnergyRegeneration = att_EnergyRegeneration;
                 enemySpawnRate = att_SpawnRate;
+                timeSpawnEnemyDelay = att_SpawnTime;
             }
         }
         else if (gameMatch == 6)
@@ -635,6 +643,16 @@ public class GameManager : MonoBehaviour
     public bool IsRushTime()
     {
         return isRushTime;
+    }
+
+    public void SetPauseGame(bool value)
+    {
+        this.isPause = value;
+    }
+
+    public bool IsPauseGame()
+    {
+        return this.isPause;
     }
 
 }

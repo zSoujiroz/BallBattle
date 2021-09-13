@@ -24,11 +24,18 @@ public class MenuScripts : MonoBehaviour
     public void PauseGame()
     {
         Time.timeScale = 0f;
+        GameManager.instance.SetPauseGame(true);
     }
 
     public void ResumeGame()
     {
         Time.timeScale = 1f;
+        GameManager.instance.SetPauseGame(false);
+    }
+
+    public void ExitMatch()
+    {
+        GameManager.instance.ResetPlayer();
     }
 
     public void HomeButton(int sceneID)
