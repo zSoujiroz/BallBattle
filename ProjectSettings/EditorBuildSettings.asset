@@ -8,4 +8,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/BallBattle.unity
     guid: d0f8fc35109dce44399b0e5cfc1fb23c
-  m_configObjects: {}
+  - enabled: 1
+    path: Assets/UX/Scenes/UXManagerScene.unity
+    guid: 5d9539f4c7ee5c74c85a038c90cb6e1b
+  m_configObjects:
+    UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: c95e85c43cd19ca4a81b8d4ac9c41588, type: 2}
+    UnityEditor.XR.ARKit.ARKitSettings: {fileID: 11400000, guid: 30dabe5b445d05744ad5acfb4e342408, type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: c1b240929ad23ef4ebeaa14934e988ba, type: 2}
