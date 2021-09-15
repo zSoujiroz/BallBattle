@@ -57,6 +57,7 @@ public class GoalScripts : MonoBehaviour
     private IEnumerator PlayerCatchGoal()
 	{
         yield return new WaitForSeconds(3f);
-        GameManager.instance.EndMatch(true);
+        //GameManager.instance.EndMatch(true);
+        GameManager.instance.EndMatch(GameManager.MatchResult.WIN);
 	}
 }

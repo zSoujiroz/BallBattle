@@ -463,7 +463,8 @@ public class Player_Scripts : MonoBehaviour
 		}
 		else
 		{
-			StartCoroutine(ThrowTheBalForward());
+			GameManager.instance.EndMatch(GameManager.MatchResult.LOSE);
+			//StartCoroutine(ThrowTheBalForward());
 		}
     }
 
@@ -474,6 +475,12 @@ public class Player_Scripts : MonoBehaviour
 		rbBall.velocity = transform.forward * ballSpeed;
 		yield return new WaitForSeconds(2f);
 		rbBall.velocity = Vector3.zero;
+	}
+
+	private IEnumerator EndMatch(GameManager.MatchResult result)
+	{
+		yield return new WaitForSeconds(2f);
+		GameManager.instance.EndMatch(result);
 	}
 
 	private IEnumerator EndMatch()

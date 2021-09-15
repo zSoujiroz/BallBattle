@@ -22,6 +22,13 @@ public class GameManager : MonoBehaviour
         PENALTY
 	};
 
+    public enum MatchResult    
+    {
+        WIN,
+        LOSE,
+        DRAW
+    }
+
     public TextMeshProUGUI matchTimer;
     public Slider playerEnergySlider;
     public Slider enemyEnergySlider;
@@ -175,7 +182,8 @@ public class GameManager : MonoBehaviour
             else
             {
                 timerIsRunning = false;
-                EndMatch(false);
+                //EndMatch(false);
+                EndMatch(MatchResult.DRAW);
             }
         }
     }
@@ -363,6 +371,42 @@ public class GameManager : MonoBehaviour
         enemyTeam = new List<GameObject>();
         playerTeam = new List<GameObject>();
 
+    }
+
+    public void EndMatch(MatchResult result)
+    {
+        timerIsRunning = false;
+
+        // Clear Penalty maps
+        if (playerMode == PlayerMode.PENALTY)
+        {
+            mazeController.ClearMazeMap();
+        }
+
+        // Add pts for Winner
+        switch (result)
+        {
+            case MatchResult.WIN:
+                if (playerMode == PlayerMode.ATTACKER)
+                    playerScore += 1;
+                else
+                    enemyScore += 1;
+                break;
+            
+            case MatchResult.LOSE:
+                if (playerMode == PlayerMode.ATTACKER)
+                    enemyScore += 1;
+                else
+                    playerScore += 1;
+                break;
+
+            case MatchResult.DRAW:
+                break;
+        }
+
+        // Display Endmatch
+        bool isGameOver = CheckEndGame();
+        DisplayEndGame(isGameOver);
     }
 
     public void EndMatch(bool isWin)
